@@ -1,0 +1,48 @@
+# External tool binaries (installed locally via tools/install_*.sh)
+tools/oriTfinder2_linux/
+tools/ares_arroyo_oriT/
+tools/*.tar.gz
+tools/*.zip
+
+# Project-specific runtime data (skeleton stays empty until users put their data in)
+**/outputs/
+**/inputs/
+**/workspace/
+**/tmp/
+**/logs/
+**/*.bam
+**/*.bai
+**/*.fastq
+**/*.fastq.gz
+**/*.fna
+**/*.faa
+**/*.gff
+**/*.gff3
+**/*.gbff
+**/*.gbk
+**/*.tblout
+**/*.tsv
+**/*.csv
+**/*.paf
+**/*.delta
+**/*.dmd
+
+# But keep templates + examples
+!docs/**/*.tsv
+!docs/**/*.csv
+
+# Python/R
+__pycache__/
+*.pyc
+.Rhistory
+.RData
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Conda
+.snakemake/
