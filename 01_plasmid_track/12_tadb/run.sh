@@ -1,0 +1,26 @@
+#!/bin/bash
+# === TADB (toxin-antitoxin) via DIAMOND blastp ===
+# Filter: id≥70, qcov≥50, scov≥50, evalue≤1e-5
+set -euo pipefail
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
+source "$REPO/config.sh"
+: ${PROJECT:?ERROR: export PROJECT=/path/to/project}
+
+FAA=$PROJECT/plasmid/04_master_orf/all/master.faa
+OUT=$PROJECT/plasmid/12_tadb
+mkdir -p $OUT
+
+[ -s $OUT/tadb.tsv ] && { echo "skip (exists)"; exit 0; }
+
+activate_env "$ENV_DIAMOND"
+
+diamond blastp \
+  --query $FAA --db $TADB_DMND \
+  --id 70 --query-cover 50 --subject-cover 50 \
+  --evalue 1e-5 --max-target-seqs 1 \
+  --threads $THREADS --memory-limit ${MEM_DIAMOND%G} \
+  --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp scovhsp \
+  --out $OUT/tadb.tsv
+
+echo "[$(date '+%F %T')] TADB hits: $(wc -l < $OUT/tadb.tsv)"

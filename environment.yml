@@ -1,0 +1,28 @@
+# Conda env for analysis + visualization Python scripts.
+# Install with:
+#   conda env create -f environment.yml
+#   conda activate shotgun-analysis
+#
+# This env covers requirements.txt + analysis utilities.
+# Tool-specific envs (bakta, mob_suite, macsyfinder, metaflye, metaspades, ...)
+# are NOT included here — create separately via setup_envs.sh.
+
+name: shotgun-analysis
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.10
+  - biopython>=1.81
+  - pandas>=2.0
+  - numpy>=1.24
+  - scipy>=1.10
+  - scikit-learn>=1.3
+  - networkx>=3.0
+  - python-louvain
+  - matplotlib>=3.7
+  - seaborn>=0.12
+  - pip
+  - pip:
+      - gseapy>=1.0
+      - pycirclize>=1.0

@@ -1,0 +1,18 @@
+# Python dependencies for analysis + visualization scripts.
+# Install with:
+#   pip install -r requirements.txt
+#
+# These cover analysis utilities (Mobile ARG, AcCNET, functional comparison, etc.)
+# Tool-specific conda envs are NOT installed by pip — use setup_envs.sh.
+
+biopython>=1.81
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.3
+networkx>=3.0
+python-louvain
+matplotlib>=3.7
+seaborn>=0.12
+gseapy>=1.0
+pycirclize>=1.0

@@ -40,31 +40,35 @@ Raw reads (Illumina or HiFi)
 
 ```
 shotgun_metagenomics/
-├── run.sh                            # master orchestrator (runs all phases)
-├── README.md                         # this file
-├── config/                           # parameterizable DB paths + conda env names
-│   ├── db_paths.sh
-│   ├── envs.sh
-│   └── threads.sh
-├── 00_shared/                        # reads → assembly → classify → bin
-│   └── run.sh
-├── 01_plasmid_track/                 # plasmid analysis
-│   └── run.sh
-├── 02_mag_track/                     # MAG analysis
-│   └── run.sh
-├── 03_unbinned_track/                # unbinned chromosomal annotation
-│   └── run.sh
-├── 04_cross_track/                   # cross-track (Mobile ARG)
-│   └── run.sh
-└── tools/                            # external standalone tools (install scripts only)
+├── run.sh                  # master orchestrator (runs all 5 sections)
+├── run_initial.sh          # 00_shared
+├── run_plasmid.sh          # 01_plasmid_track
+├── run_mag.sh              # 02_mag_track
+├── run_unbinned.sh         # 03_unbinned_track
+├── run_cross.sh            # 04_cross_track
+├── config.sh               # single source of truth: DB paths + conda envs + threads
+├── environment.yml         # conda env for analysis Python scripts
+├── requirements.txt        # pip deps
+├── setup_envs.sh           # create all tool-specific conda envs (idempotent)
+├── README.md
+├── LICENSE
+├── .gitignore
+├── 00_shared/              # 18 step scripts (reads → assembly → classify → bin)
+├── 01_plasmid_track/       # 27 step scripts (plasmid pipeline)
+├── 02_mag_track/           # 25 step scripts (MAG pipeline)
+├── 03_unbinned_track/      # 22 step scripts (UB annotation)
+├── 04_cross_track/         # 9 step scripts (Mobile ARG)
+└── tools/                  # external standalone tools (install scripts only)
     ├── install_oritfinder2.sh
     └── install_ares_arroyo.sh
 ```
 
 Each numbered subfolder is a self-contained pipeline step with its own `run.sh` (or per-tool script) that:
-- `source`s `config/db_paths.sh` + `config/envs.sh` + `config/threads.sh`
-- assumes input from the prior step's standard output path
-- writes to its own output dir
+- `source`s `config.sh` at the repo root
+- accepts `$PROJECT` env var pointing to a per-project working dir
+- assumes input from the prior step's standard output path under `$PROJECT/`
+- writes to its own `$PROJECT/<section>/<step>/` output dir
+- is idempotent (skips if expected output exists)
 - can be re-run independently if a prior step's input is available
 
 ## Prerequisites
@@ -310,41 +314,62 @@ Spans all 3 tracks. 7-step pipeline (Zheng 2026 framework, doi:10.1186/s40168-02
 
 ```bash
 # 1) Configure (edit paths + envs for your environment)
-vim config/db_paths.sh        # DB paths
-vim config/envs.sh             # conda env names
-vim config/threads.sh          # thread budget
+vim config.sh                     # all DB paths + conda env names + threads
 
-# 2) Install external tools
+# 2) Create conda envs (idempotent — skips existing)
+bash setup_envs.sh                # all envs
+# or selective:
+bash setup_envs.sh bakta mob_suite
+
+# 3) Install Python analysis env
+conda env create -f environment.yml      # creates `shotgun-analysis`
+conda activate shotgun-analysis
+pip install -r requirements.txt
+
+# 4) Install external standalone tools
 bash tools/install_oritfinder2.sh
 bash tools/install_ares_arroyo.sh
 
-# 3) Stage your project inputs
+# 5) Stage your project inputs
 mkdir -p ~/my_project/00_input/reads
 cp /path/to/reads/*.fastq.gz ~/my_project/00_input/reads/
 # Provide circ_frag_map.tsv (see format above)
 vim ~/my_project/00_input/circ_frag_map.tsv
 
-# 4) Set project working dir + read type, then run everything
-cd ~/my_project
-export PROJECT_DIR=$PWD
+# 6) Run the full pipeline
 export READ_TYPE=hifi             # or "illumina"
-bash /path/to/shotgun_metagenomics/run.sh
+bash /path/to/shotgun_metagenomics/run.sh ~/my_project
 ```
 
-### Run a single track
+### Run a single section (skip the rest)
 
 ```bash
-cd ~/my_project
-bash /path/to/shotgun_metagenomics/01_plasmid_track/run.sh
-bash /path/to/shotgun_metagenomics/02_mag_track/run.sh
-bash /path/to/shotgun_metagenomics/03_unbinned_track/run.sh
-bash /path/to/shotgun_metagenomics/04_cross_track/run.sh
+# Initial only (reads → MAG production)
+bash /path/to/shotgun_metagenomics/run_initial.sh  ~/my_project
+
+# Plasmid track only
+bash /path/to/shotgun_metagenomics/run_plasmid.sh  ~/my_project
+
+# MAG track only
+bash /path/to/shotgun_metagenomics/run_mag.sh      ~/my_project
+
+# Unbinned chromosomal only
+bash /path/to/shotgun_metagenomics/run_unbinned.sh ~/my_project
+
+# Cross-track (Mobile ARG) — requires all 3 tracks done first
+bash /path/to/shotgun_metagenomics/run_cross.sh    ~/my_project
+```
+
+### Skip individual sections in master run.sh
+
+```bash
+SKIP_INITIAL=1 SKIP_UNBINNED=1 bash run.sh ~/my_project
 ```
 
 ### Run a single step
 
 ```bash
-cd ~/my_project
+export PROJECT=~/my_project
 bash /path/to/shotgun_metagenomics/01_plasmid_track/23_mob_typer/run.sh
 ```
 
@@ -354,19 +379,17 @@ Every step's `run.sh` is self-contained and re-runnable as long as its required 
 
 ## Build status
 
-| Phase | Section | Status |
+| Section | Scripts | Status |
 |---|---|---|
-| 1 | Skeleton + config + tools install + run.sh templates | ✅ committed |
-| 2 | `00_shared/01_read_qc` + `02_assembly` | pending |
-| 3 | `00_shared/03-06` (geNomad virus + plasmid + 5-filter + topology + chromosomal) | pending |
-| 4 | `00_shared/07-08` (MAG production + split) | pending |
-| 5 | `01_plasmid_track/01-04` (raw + drep + Bakta + master_orf) | pending |
-| 6 | `01_plasmid_track/05-22` annotation | pending |
-| 7 | `01_plasmid_track/23-28` mobility typing | ✅ migrated (defaults + alternatives) |
-| 8 | `01_plasmid_track/30-32` clustering + AcCNET + functional comparison | pending |
-| 9 | `01_plasmid_track/40-60` quantification + host + PLSDB | pending |
-| 10 | `02_mag_track` + `03_unbinned_track` | pending |
-| 11 | `04_cross_track/01_mobile_arg` | pending |
+| `00_shared/` | 18 | ✅ |
+| `01_plasmid_track/` | 27 | ✅ |
+| `02_mag_track/` | 25 | ✅ |
+| `03_unbinned_track/` | 22 | ✅ |
+| `04_cross_track/` | 9 | ✅ |
+| Root orchestrators + config + setup | 7 | ✅ |
+| **Total** | **108** scripts | **all implemented** |
+
+Each is fully implemented, idempotent, parameterizable via `config.sh`. Some tool integrations may need per-environment tweaking (e.g. BiG-SCAPE v1 vs v2, MetaBinner kmer profile path, custom conda env names).
 
 ---
 
