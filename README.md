@@ -104,7 +104,6 @@ Each numbered subfolder is a self-contained pipeline step with its own `run.sh` 
 | COPLA | `copla_install/COPLA/` | direct PTU |
 | iPHoP | `iphop_db/Jun_2025_pub_rw/` | host prediction (CRISPR spacer DB) |
 | PLSDB | `plsdb/` | per-plasmid lookup + ecosystem positioning |
-| MMseqs2 GTDB | `mmseqs2_db/gtdbAA_DB` | UB contig taxonomy |
 | GTDB-Tk | `gtdbtk_db/release232/` | MAG taxonomy |
 | CheckM2 | `checkm2_db/` | MAG completeness/contamination |
 
@@ -291,7 +290,6 @@ Reference: Coluzzi & Rocha 2022 NAR (10.1093/nar/gkac1079); Ares-Arroyo et al. 2
 | 03 | `03_master_orf/` | combined master |
 | 04–21 | annotation | **Same set as MAG track 04-21** (Pfam, NCBIfam, KofamScan, eggNOG, AMRFinder, dbCAN, DBSCAN-SWA, ISEScan, IntegronFinder, ICEberg3) |
 | 22 | `22_cctyper/` | CRISPRCasTyper on UB contigs (parallel to MAG cctyper) |
-| 22b | `22_mmseqs2_lca_taxonomy/` | UB-specific: MMseqs2 `easy-taxonomy --tax-lineage 1` LCA against GTDB r214 (Priest 2025 method) for contig-level taxonomy |
 
 ---
 

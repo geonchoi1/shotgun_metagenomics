@@ -17,6 +17,5 @@ for step in 04_pfam 05_ncbifam 06_kofamscan 07_eggnog 08_amrfinder 13_dbcan 18_d
 done
 
 bash "$T/22_cctyper/run.sh"
-bash "$T/22_mmseqs2_lca_taxonomy/run.sh"
 
 echo "[$(date '+%F %T')] === 03_unbinned_track DONE ==="
