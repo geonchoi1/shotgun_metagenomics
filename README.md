@@ -23,6 +23,7 @@ Raw reads (Illumina or HiFi)
       │                              → dRep strain (99% supp)
       │                              → MIMAG classify → GTDB-Tk
       ▼ 08_split_binned_unbinned/    chromosomal → MAG-binned + UNBINNED
+      ▼ 09_kraken2_community/        read-level Kraken2 + Bracken (covers everything)
       │
       ├───────────┬────────────┬────────────────┐
       ▼           ▼            ▼                │
@@ -210,6 +211,7 @@ Each track follows the **ORF-first** pattern:
 | 06 | `06_chromosomal_extract/` | assembly − plasmid − virus = chromosomal |
 | 07 | `07_mag_production/` | Mapping (minimap2 long / BWA short) → depth (jgi) → binning → DAS_Tool → CheckM2 → Barrnap rRNA → tRNAscan-SE → dRep species (95%, main) + strain (99%, supp) → MIMAG → GTDB-Tk |
 | 08 | `08_split_binned_unbinned/` | chromosomal contigs → MAG-binned set + unbinned set |
+| 09 | `09_kraken2_community/` | Kraken2 + Bracken on clean reads → community-level taxonomy matrix (sample × species/genus). Complements MAG GTDB-Tk by covering reads that did not bin |
 
 ### Binner choice
 
