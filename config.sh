@@ -35,7 +35,7 @@ export DBAPIS_HMM=${DBAPIS_HMM:-$DB_ROOT/dbAPIS/dbAPIS.hmm}
 # Specific annotation DBs (DIAMOND-based)
 export AMRFINDER_DB=${AMRFINDER_DB:-$DB_ROOT/amrfinder_db/latest}
 export BACMET_DMND=${BACMET_DMND:-$DB_ROOT/bacmet_db/BacMet.dmnd}
-export VFDB_DMND=${VFDB_DMND:-$DB_ROOT/vfdb_db/VFDB.dmnd}
+export VFDB_DMND=${VFDB_DMND:-$DB_ROOT/vfdb_db/VFDB_setB.dmnd}
 export TADB_DMND=${TADB_DMND:-$DB_ROOT/tadb_db/TADB.dmnd}
 export DBCAN_DB=${DBCAN_DB:-$DB_ROOT/dbcan_db}
 export DEFENSEFINDER_MODELS=${DEFENSEFINDER_MODELS:-$DB_ROOT/defense-finder-models-v3.1}

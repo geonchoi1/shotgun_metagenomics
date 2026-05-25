@@ -11,7 +11,7 @@ echo "[$(date '+%F %T')] === 03_unbinned_track START ==="
 bash "$T/02_bakta/run.sh"
 bash "$T/03_master_orf/run.sh"
 
-for step in 04_pfam 05_ncbifam 06_kofamscan 07_eggnog 08_amrfinder 13_dbcan 18_dbscan_swa \
+for step in 04_pfam 05_ncbifam 06_kofamscan 07_eggnog 08_amrfinder 10_vfdb 13_dbcan 18_dbscan_swa \
             19_isescan 20_integronfinder 21_iceberg3; do
     [ -f "$T/$step/run.sh" ] && bash "$T/$step/run.sh"
 done
