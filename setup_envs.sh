@@ -87,6 +87,9 @@ should dram            && create_one dram            dram
 # --- UB taxonomy ------------------------------------------------------------
 should mmseqs2         && create_one mmseqs2         mmseqs2
 
+# --- Community-level read taxonomy ------------------------------------------
+should kraken2         && create_one kraken2         kraken2 bracken
+
 # --- Cross-track (Mobile ARG R) ---------------------------------------------
 should r-base          && create_one r-base          r-base r-essentials
 

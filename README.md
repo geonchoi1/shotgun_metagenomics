@@ -23,6 +23,7 @@ Raw reads (Illumina or HiFi)
       │                              → dRep strain (99% supp)
       │                              → MIMAG classify → GTDB-Tk
       ▼ 08_split_binned_unbinned/    chromosomal → MAG-binned + UNBINNED
+      ▼ 09_kraken2_community/        read-level Kraken2 + Bracken (covers everything)
       │
       ├───────────┬────────────┬────────────────┐
       ▼           ▼            ▼                │
@@ -210,6 +211,7 @@ Each track follows the **ORF-first** pattern:
 | 06 | `06_chromosomal_extract/` | assembly − plasmid − virus = chromosomal |
 | 07 | `07_mag_production/` | Mapping (minimap2 long / BWA short) → depth (jgi) → binning → DAS_Tool → CheckM2 → Barrnap rRNA → tRNAscan-SE → dRep species (95%, main) + strain (99%, supp) → MIMAG → GTDB-Tk |
 | 08 | `08_split_binned_unbinned/` | chromosomal contigs → MAG-binned set + unbinned set |
+| 09 | `09_kraken2_community/` | Kraken2 + Bracken on clean reads → community-level taxonomy matrix (sample × species/genus). Complements MAG GTDB-Tk by covering reads that did not bin |
 
 ### Binner choice
 
@@ -231,7 +233,6 @@ See `00_shared/07_mag_production/03_binner/README.md`.
 | 05–08 | broad HMM | Pfam, NCBIfam, KofamScan, eggNOG-mapper |
 | 09 | `09_amrfinder/` | AMRFinderPlus `--plus` (AMR + stress + biocide) |
 | 10–12 | DIAMOND | BacMet (metal/biocide), VFDB (virulence), TADB (toxin-antitoxin) |
-| 13 | `13_dbapis/` | dbAPIS anti-defense HMM |
 | 14 | `14_dbcan/` | dbCAN CAZyme |
 | 15 | `15_macrel/` | Macrel AMP |
 | 16 | `16_defensefinder/` | DefenseFinder bacterial defense systems |
@@ -273,7 +274,7 @@ Reference: Coluzzi & Rocha 2022 NAR (10.1093/nar/gkac1079); Ares-Arroyo et al. 2
 | 01 | `01_raw_fasta/` | symlink: dereplicated MAGs from `00_shared/07` (`circ/`+`frag/` if any complete circular) |
 | 02 | `02_bakta/` | Bakta on each MAG (`--complete` for circular MAGs, default for linear) |
 | 03 | `03_master_orf/` | combined master with `circ/`, `frag/`, `all/`, `per_mag/` subfolders |
-| 04–21 | annotation | **Same set as plasmid track 05-22** (Pfam ~ ICEberg3) |
+| 04–21 | annotation | **Reduced set vs plasmid** — Pfam, NCBIfam, KofamScan, eggNOG, AMRFinder, dbCAN, DBSCAN-SWA, ISEScan, IntegronFinder, ICEberg3 (BacMet/VFDB/TADB/dbAPIS/Macrel/DefenseFinder/antiSMASH/BigSCAPE skipped — plasmid only) |
 | 22 | `22_cctyper/` | MAG-specific: CRISPRCasTyper (CRISPR-Cas system + spacer extraction; spacers feed Track A of plasmid host prediction) |
 | 30 | `30_metabolic_g/` | MAG-specific: METABOLIC-G per-MAG × pathway matrix + N/S/C/P cycling heatmap + biogeochemical diagram |
 | 40 | `40_coverm/` | Per-MAG per-sample TPM matrix (`coverm genome` with `--min-read-aligned-percent 75 --min-read-percent-identity 95`) |
@@ -288,8 +289,9 @@ Reference: Coluzzi & Rocha 2022 NAR (10.1093/nar/gkac1079); Ares-Arroyo et al. 2
 | 01 | `01_raw_fasta/` | symlink: unbinned chromosomal contigs (`circ/`+`frag/`) |
 | 02 | `02_bakta/` | Bakta |
 | 03 | `03_master_orf/` | combined master |
-| 04–21 | annotation | **Same set as MAG track 04-21** |
-| 22 | `22_mmseqs2_lca_taxonomy/` | UB-specific: MMseqs2 `easy-taxonomy --tax-lineage 1` LCA against GTDB r214 (Priest 2025 method) for contig-level taxonomy |
+| 04–21 | annotation | **Same set as MAG track 04-21** (Pfam, NCBIfam, KofamScan, eggNOG, AMRFinder, dbCAN, DBSCAN-SWA, ISEScan, IntegronFinder, ICEberg3) |
+| 22 | `22_cctyper/` | CRISPRCasTyper on UB contigs (parallel to MAG cctyper) |
+| 22b | `22_mmseqs2_lca_taxonomy/` | UB-specific: MMseqs2 `easy-taxonomy --tax-lineage 1` LCA against GTDB r214 (Priest 2025 method) for contig-level taxonomy |
 
 ---
 

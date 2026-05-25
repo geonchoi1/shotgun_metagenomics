@@ -19,6 +19,10 @@ export RFAM_CM=${RFAM_CM:-$RFAM_DB/rRNA_5.cm}        # combined 5 rRNA CMs (RF00
 # Bakta
 export BAKTA_DB=${BAKTA_DB:-$DB_ROOT/bakta_db/db}
 
+# Kraken2 / Bracken community taxonomy
+export KRAKEN2_DB=${KRAKEN2_DB:-$DB_ROOT/kraken2_db}
+export BRACKEN_READ_LEN=${BRACKEN_READ_LEN:-150}    # pre-built standard DB ships 50/100/150/200/250/300
+
 # Functional HMM DBs
 export PFAM_HMM=${PFAM_HMM:-$DB_ROOT/pfam/Pfam-A.hmm}
 export PFAM_HALLMARK=${PFAM_HALLMARK:-$DB_ROOT/pfam_hallmark}    # PF03090/PF03432/PF07042/PF12696/TIGR00929
@@ -95,6 +99,7 @@ export ENV_KOFAMSCAN=${ENV_KOFAMSCAN:-kofamscan}
 export ENV_EGGNOG=${ENV_EGGNOG:-eggnog-mapper}
 export ENV_AMRFINDER=${ENV_AMRFINDER:-amrfinderplus}
 export ENV_DBCAN=${ENV_DBCAN:-dbcan}
+export ENV_KRAKEN2=${ENV_KRAKEN2:-kraken2}
 export ENV_MACREL=${ENV_MACREL:-macrel}
 export ENV_DEFENSEFINDER=${ENV_DEFENSEFINDER:-defense-finder}
 export ENV_ANTISMASH=${ENV_ANTISMASH:-antismash}
