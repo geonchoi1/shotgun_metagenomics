@@ -1,9 +1,20 @@
 #!/bin/bash
-# === Track 1 + 2 + 3 clustering + PTU co-membership validation ===
-# Track 1: BLAST-Leiden pOTU on our 1873 (Camargo / Fiamenghi)
-# Track 2: COPLA on circular only → PTU
-# Track 3: combined our + PLSDB ref → indirect PTU labels for our plasmids
-# Validation: classify Track 3 clusters as Pure/Mixed/Novel
+# === Track 1 + 2 + 3 clustering + PTU label propagation ===
+#
+# Track 1: Camargo snakemake on dereplicated own set → pOTU (own only)
+# Track 2: COPLA on circular only → direct PTU
+# Track 3: Camargo snakemake on combined (ours ∪ PLSDB PTU members) → indirect PTU labels
+#          via co-clustering with reference plasmids
+#
+# Algorithm: Camargo's contig-ani-leiden-clustering-pipeline
+#   - blastn megablast (-max_target_seqs 25000 -perc_identity 0)
+#   - anicalc.py: HSP union AF + pruned tANI
+#   - aniclust.py: edge if (qcov OR tcov ≥ min_cov), weight = ani × max(qcov, tcov)
+#   - Leiden community detection (resolution = 1)
+#
+# Refs:
+#   - Fiamenghi 2025 Nat Comm (10.1038/s41467-025-65102-6)
+#   - Camargo 2024 (github.com/apcamargo/bioinformatics-snakemake-pipelines)
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
@@ -15,61 +26,30 @@ CIRC=$PROJECT/plasmid/02_drep/circ.fna
 OUT=$PROJECT/plasmid/30_clustering
 mkdir -p $OUT/track1 $OUT/track2_copla $OUT/track3 $OUT/validation
 
-############ TRACK 1: BLAST + Leiden on ours ############
+CAMARGO_PIPELINE=${CAMARGO_PIPELINE:-$HOME/tools/bioinformatics-snakemake-pipelines/contig-ani-leiden-clustering-pipeline}
+SMK=$CAMARGO_PIPELINE/contig-ani-leiden-clustering-pipeline.smk
+
+############ TRACK 1: Camargo snakemake on OUR set ############
 T1=$OUT/track1
 if [ ! -s $T1/pOTU_membership.tsv ]; then
-  echo "[$(date '+%F %T')] Track1 — all-vs-all megablast"
-  activate_env "$ENV_DIAMOND"
-  makeblastdb -in $OURS -dbtype nucl -out $T1/plasmids
-  blastn -task megablast -query $OURS -db $T1/plasmids \
-    -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen' \
-    -evalue 1e-3 -num_threads $THREADS_BLAST \
-    -max_target_seqs 25000 -perc_identity 0.0 \
-    -out $T1/blastn.tsv
-
+  echo "[$(date '+%F %T')] Track1 — Camargo snakemake on dereplicated own set"
+  activate_env "$ENV_SNAKEMAKE_CAMARGO"
+  cp $OURS $T1/own.fna
+  cd $T1
+  snakemake --snakefile $SMK \
+    --config input=own.fna leiden_resolution=1 min_ani=0 min_cov=0.70 blast_threads=$THREADS_BLAST \
+    --cores $THREADS_BLAST
+  # convert clusters.tsv → pOTU_membership.tsv
   python3 - <<PYEOF
-import networkx as nx, igraph as ig, leidenalg
-from collections import defaultdict
-T1 = "$T1"; OURS="$OURS"
-plen = {}; cur=None; ln=0
-with open(OURS) as f:
-    for line in f:
-        if line.startswith('>'):
-            if cur: plen[cur]=ln
-            cur=line[1:].split()[0]; ln=0
-        else: ln += len(line.strip())
-plen[cur]=ln
-pair = defaultdict(lambda: {'aln':0,'pid_sum':0.0})
-with open(f"{T1}/blastn.tsv") as f:
-    for line in f:
-        p=line.rstrip('\n').split('\t')
-        q,s=p[0],p[1]
-        if q==s: continue
-        pid=float(p[2]); aln=int(p[3])
-        pair[(q,s)]['aln']+=aln; pair[(q,s)]['pid_sum']+=aln*pid
-G=nx.Graph()
-for k in plen: G.add_node(k)
-for (q,s),d in pair.items():
-    tANI=d['pid_sum']/d['aln'] if d['aln']>0 else 0
-    af=100.0*d['aln']/plen[q]
-    if af>=70.0 and tANI>=70.0:
-        w = tANI*af/10000.0
-        if G.has_edge(q,s):
-            G[q][s]['weight']=max(G[q][s]['weight'],w)
-        else:
-            G.add_edge(q,s,weight=w)
-nodes=list(G.nodes()); ni={n:i for i,n in enumerate(nodes)}
-g=ig.Graph(n=len(nodes), edges=[(ni[a],ni[b]) for a,b in G.edges()],
-           edge_attrs={'weight':[G[a][b]['weight'] for a,b in G.edges()]})
-part=leidenalg.find_partition(g, leidenalg.RBConfigurationVertexPartition,
-                              weights='weight', resolution_parameter=1.0, seed=42)
-with open(f"{T1}/pOTU_membership.tsv","w") as o:
+with open("own_clusters.tsv") as f, open("pOTU_membership.tsv","w") as o:
     o.write("contig\tpOTU\n")
-    for i,c in enumerate(part):
-        for nid in c:
-            o.write(f"{nodes[nid]}\tpOTU_{i+1:05d}\n")
-print(f"Track1 pOTU: {len(part)} clusters")
+    for i, line in enumerate(f, 1):
+        rep, members = line.strip().split('\t')
+        for m in members.split(','):
+            o.write(f"{m}\tpOTU_T1_{i:05d}\n")
 PYEOF
+  cd $SCRIPT_DIR
+  echo "[$(date '+%F %T')] Track1 pOTU: $(awk 'NR>1{print $2}' $T1/pOTU_membership.tsv | sort -u | wc -l)"
 fi
 
 ############ TRACK 2: COPLA on circular only ############
@@ -78,100 +58,120 @@ if [ -s $CIRC ] && [ ! -s $T2/copla_summary.tsv ]; then
   echo "[$(date '+%F %T')] Track2 — COPLA on circular"
   activate_env "$ENV_COPLA"
   cd $COPLA_DIR
-  python3 bin/copla.py $CIRC $T2 \
-    --threads $THREADS || echo "WARN: COPLA failed — check inputs"
+  python3 bin/copla.py $CIRC $T2 --threads $THREADS || echo "WARN: COPLA failed (often all unassigned due to fragmented data)"
   cd $SCRIPT_DIR
 fi
 
-############ TRACK 3: combined (ours ∪ PLSDB ref) BLAST + Leiden ############
+############ TRACK 3: combined (OUR ∪ PLSDB PTU refs) → Camargo + post-hoc PTU labeling ############
 T3=$OUT/track3
 if [ ! -s $T3/combined_clusters.tsv ]; then
-  echo "[$(date '+%F %T')] Track3 — combined dereplicated + PLSDB ref"
+  echo "[$(date '+%F %T')] Track3 — combined Camargo snakemake"
   mkdir -p $T3
+  # Build combined FASTA: ours + PLSDB PTU reference plasmids
+  # PLSDB plasmid IDs do not contain '|' — easy to distinguish from our IDs (sample|contig_N)
+  awk '!/^>/' $OURS > /dev/null   # validate
   cat $OURS $PLSDB_FASTA > $T3/combined.fna
-  activate_env "$ENV_DIAMOND"
-  makeblastdb -in $T3/combined.fna -dbtype nucl -out $T3/combined
-  blastn -task megablast -query $T3/combined.fna -db $T3/combined \
-    -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen' \
-    -evalue 1e-3 -num_threads $THREADS_BLAST \
-    -max_target_seqs 25000 -perc_identity 0.0 \
-    -out $T3/combined_blast.tsv
+  N_COMBINED=$(grep -c '^>' $T3/combined.fna)
+  echo "  combined input: $N_COMBINED plasmids (ours + PLSDB)"
 
-  python3 - <<PYEOF
-import networkx as nx, igraph as ig, leidenalg
-from collections import defaultdict
-T3="$T3"
-plen={}; cur=None; ln=0
-with open(f"{T3}/combined.fna") as f:
-    for line in f:
-        if line.startswith('>'):
-            if cur: plen[cur]=ln
-            cur=line[1:].split()[0]; ln=0
-        else: ln+=len(line.strip())
-plen[cur]=ln
-pair=defaultdict(lambda:{'aln':0,'pid_sum':0.0})
-with open(f"{T3}/combined_blast.tsv") as f:
-    for line in f:
-        p=line.rstrip('\n').split('\t')
-        q,s=p[0],p[1]
-        if q==s: continue
-        pair[(q,s)]['aln']+=int(p[3]); pair[(q,s)]['pid_sum']+=int(p[3])*float(p[2])
-G=nx.Graph()
-for k in plen: G.add_node(k)
-for (q,s),d in pair.items():
-    tANI=d['pid_sum']/d['aln'] if d['aln']>0 else 0
-    af=100.0*d['aln']/plen[q]
-    if af>=70.0 and tANI>=70.0:
-        w=tANI*af/10000.0
-        if G.has_edge(q,s): G[q][s]['weight']=max(G[q][s]['weight'],w)
-        else: G.add_edge(q,s,weight=w)
-nodes=list(G.nodes()); ni={n:i for i,n in enumerate(nodes)}
-g=ig.Graph(n=len(nodes), edges=[(ni[a],ni[b]) for a,b in G.edges()],
-           edge_attrs={'weight':[G[a][b]['weight'] for a,b in G.edges()]})
-part=leidenalg.find_partition(g, leidenalg.RBConfigurationVertexPartition,
-                              weights='weight', resolution_parameter=1.0, seed=42)
-with open(f"{T3}/combined_clusters.tsv","w") as o:
-    o.write("contig\tpOTU_T3\n")
-    for i,c in enumerate(part):
-        for nid in c:
-            o.write(f"{nodes[nid]}\tpOTU_T3_{i+1:05d}\n")
-print(f"Track3 clusters: {len(part)}")
-PYEOF
+  activate_env "$ENV_SNAKEMAKE_CAMARGO"
+  cd $T3
+  snakemake --snakefile $SMK \
+    --config input=combined.fna leiden_resolution=1 min_ani=0 min_cov=0.70 blast_threads=$THREADS_BLAST \
+    --cores $THREADS_BLAST
+  cd $SCRIPT_DIR
 fi
 
-############ VALIDATION — Pure / Mixed / Novel ############
-echo "[$(date '+%F %T')] Validation — Pure/Mixed/Novel"
+############ POST-HOC: PTU label propagation (Track 3) ############
+echo "[$(date '+%F %T')] Post-hoc PTU label propagation"
 python3 - <<PYEOF
-from collections import defaultdict
-OURS_IDS=set()
+from collections import defaultdict, Counter
+
+# Load OUR plasmid IDs
+OURS_IDS = set()
 with open("$OURS") as f:
     for line in f:
-        if line.startswith('>'): OURS_IDS.add(line[1:].split()[0])
-cl=defaultdict(list)
-with open("$OUT/track3/combined_clusters.tsv") as f:
+        if line.startswith('>'):
+            OURS_IDS.add(line[1:].split()[0])
+
+# Load PLSDB PTU table (id → PTU label) if available
+PLSDB_PTU = {}
+plsdb_ptu_file = "$PLSDB_PTU_TABLE"
+import os
+if os.path.exists(plsdb_ptu_file):
+    with open(plsdb_ptu_file) as f:
+        next(f)
+        for line in f:
+            parts = line.rstrip('\n').split('\t')
+            if len(parts) >= 2:
+                PLSDB_PTU[parts[0]] = parts[1]
+print(f"  PLSDB PTU labels: {len(PLSDB_PTU)}")
+
+# Load combined cluster
+clusters = defaultdict(list)
+with open("$T3/combined_clusters.tsv") as f:
+    for line in f:
+        rep, members = line.strip().split('\t')
+        for m in members.split(','):
+            clusters[rep].append(m)
+
+# Classify each cluster + propagate PTU
+out_cluster = open("$OUT/validation/cluster_classification.tsv", "w")
+out_cluster.write("pOTU_T3_rep\tn_total\tn_ours\tn_ref\tclass\tassigned_ptu\tref_members\n")
+out_ptu = open("$OUT/validation/our_plasmid_indirect_ptu.tsv", "w")
+out_ptu.write("contig\tindirect_PTU\tassignment_type\n")
+
+n_pure_novel = n_mixed_with_ptu = n_mixed_no_ptu = n_pure_ref = 0
+for rep, members in clusters.items():
+    ours = [m for m in members if m in OURS_IDS]
+    ref = [m for m in members if m not in OURS_IDS]
+    if ours and ref:
+        # Mixed cluster — propagate PTU label
+        ref_ptu_labels = [PLSDB_PTU[r] for r in ref if r in PLSDB_PTU]
+        if ref_ptu_labels:
+            # Use most common PTU; mark Mixed if multiple
+            ptu_counter = Counter(ref_ptu_labels)
+            if len(ptu_counter) == 1:
+                assigned = ptu_counter.most_common(1)[0][0]
+                cls = "Mixed_single_PTU"
+            else:
+                assigned = ptu_counter.most_common(1)[0][0]
+                cls = "Mixed_multi_PTU"
+            for o in ours:
+                out_ptu.write(f"{o}\t{assigned}\t{cls}\n")
+            n_mixed_with_ptu += 1
+        else:
+            assigned = "no_PTU_in_cluster"
+            cls = "Mixed_no_PTU_label"
+            for o in ours:
+                out_ptu.write(f"{o}\t{assigned}\t{cls}\n")
+            n_mixed_no_ptu += 1
+    elif ours and not ref:
+        cls = "PureNovel"; assigned = "Novel"
+        for o in ours:
+            out_ptu.write(f"{o}\tNovel\tPureNovel\n")
+        n_pure_novel += 1
+    else:
+        cls = "PureRef"; assigned = "-"
+        n_pure_ref += 1
+    out_cluster.write(f"{rep}\t{len(members)}\t{len(ours)}\t{len(ref)}\t{cls}\t{assigned}\t{';'.join(ref[:3])}\n")
+
+out_cluster.close(); out_ptu.close()
+print(f"  PureNovel clusters: {n_pure_novel}")
+print(f"  Mixed with PTU label: {n_mixed_with_ptu}")
+print(f"  Mixed without PTU: {n_mixed_no_ptu}")
+print(f"  PureRef clusters: {n_pure_ref}")
+
+# Count our plasmid PTU assignment
+ptu_counts = Counter()
+with open("$OUT/validation/our_plasmid_indirect_ptu.tsv") as f:
     next(f)
     for line in f:
-        c,p=line.rstrip('\n').split('\t')
-        cl[p].append(c)
-out=open("$OUT/validation/cluster_classification.tsv","w")
-out.write("pOTU_T3\tn_total\tn_ours\tn_ref\tclass\tindirect_ptu_ref_members\n")
-ours_to_ref={}
-for p,ms in cl.items():
-    ours=[m for m in ms if m in OURS_IDS]
-    ref=[m for m in ms if m not in OURS_IDS]
-    if ours and ref: cls="Mixed"
-    elif ours and not ref: cls="Novel"
-    else: cls="PureRef"
-    out.write(f"{p}\t{len(ms)}\t{len(ours)}\t{len(ref)}\t{cls}\t{';'.join(ref[:5])}\n")
-    if cls=="Mixed":
-        # Assign indirect-PTU = mode-ref-member name
-        for o in ours:
-            ours_to_ref[o]=p
-out.close()
-with open("$OUT/validation/our_plasmid_indirect_ptu.tsv","w") as o:
-    o.write("contig\tpOTU_T3\n")
-    for c,p in ours_to_ref.items():
-        o.write(f"{c}\t{p}\n")
-print("validation done")
+        _, ptu, _ = line.rstrip().split('\t')
+        ptu_counts[ptu] += 1
+print(f"\n  Our plasmid PTU assignment summary:")
+for ptu, n in ptu_counts.most_common(20):
+    print(f"    {ptu}: {n}")
 PYEOF
-echo "[$(date '+%F %T')] DONE"
+
+echo "[$(date '+%F %T')] DONE — see $OUT/validation/"
