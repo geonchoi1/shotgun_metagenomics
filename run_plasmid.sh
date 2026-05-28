@@ -31,6 +31,7 @@ bash "$T/30_clustering/run.sh"
 bash "$T/31_accnet/run.sh"
 bash "$T/32_functional_comparison/run.sh"
 bash "$T/40_quantification/run.sh"
+bash "$T/45_copy_number_prediction/run.sh"
 bash "$T/50_host_prediction/run.sh"
 bash "$T/60_plsdb_lookup/run.sh"
 
