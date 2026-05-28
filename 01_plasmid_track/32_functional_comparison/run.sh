@@ -19,6 +19,13 @@ mkdir -p $OUT
 
 KEGG_GMT=${KEGG_GMT:-$DB_ROOT/gsea/kegg_pathway.gmt}
 
+# Auto-build KEGG GMT from REST API if missing (one-time, ~30s)
+if [ ! -s "$KEGG_GMT" ]; then
+    echo "[$(date +%F\ %T)] KEGG GMT not found — building from KEGG REST API"
+    mkdir -p "$(dirname $KEGG_GMT)"
+    python3 "$SCRIPT_DIR/build_kegg_gmt.py" --out "$KEGG_GMT"
+fi
+
 activate_env "$ENV_DIAMOND"  # base — has python sklearn/pandas/scipy/gseapy
 
 python3 - <<PYEOF
