@@ -1,6 +1,6 @@
 #!/bin/bash
 # === 06 Chromosomal extract = assembly - plasmid IDs - virus IDs (per sample) ===
-# Input:  $PROJECT/02_assembly/<SAMPLE>/assembly.fasta | scaffolds.fasta
+# Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly.fasta | scaffolds.fasta
 #         $PROJECT/03_virus/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_virus.fna
 #         $PROJECT/04_plasmid/<SAMPLE>/F12345.ids
 # Output: $PROJECT/06_chromosomal/<SAMPLE>/chromosomal.fasta
@@ -12,7 +12,7 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-ASM_BASE=$PROJECT/02_assembly
+ASM_BASE=$PROJECT/00_shared/02_assembly/metaflye
 VIR_BASE=$PROJECT/03_virus
 PLA_BASE=$PROJECT/04_plasmid
 OUT_BASE=$PROJECT/06_chromosomal

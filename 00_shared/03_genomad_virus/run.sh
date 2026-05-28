@@ -1,6 +1,6 @@
 #!/bin/bash
 # === 03 geNomad virus identification (default params) ===
-# Input:  $PROJECT/02_assembly/<SAMPLE>/assembly.fasta (HiFi) | scaffolds.fasta (Illumina)
+# Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly_1kb.fasta (HiFi) | scaffolds.fasta (Illumina)
 # Output: $PROJECT/03_virus/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_virus.fna
 #         $PROJECT/03_virus/all_virus.fna   (aggregated across samples)
 
@@ -10,7 +10,7 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-ASM_BASE=$PROJECT/02_assembly
+ASM_BASE=$PROJECT/00_shared/02_assembly/metaflye
 OUT_BASE=$PROJECT/03_virus
 mkdir -p "$OUT_BASE"
 
@@ -23,8 +23,8 @@ for d in "$ASM_BASE"/*/; do
     [ -d "$d" ] || continue
     sample=$(basename "$d")
 
-    asm="$d/assembly.fasta"
-    [ -f "$asm" ] || asm="$d/scaffolds.fasta"
+    asm="$d/assembly_1kb.fasta"
+    [ -f "$asm" ] || asm="$d/assembly_1kb.fasta"
     [ -f "$asm" ] || { echo "  skip $sample: no assembly"; continue; }
 
     out_dir="$OUT_BASE/$sample"

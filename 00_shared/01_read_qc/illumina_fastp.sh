@@ -1,20 +1,21 @@
 #!/bin/bash
 # === Illumina read trimming with fastp ===
-# Input:  $PROJECT_DIR/00_input/reads/<SAMPLE>_R1.fastq.gz + <SAMPLE>_R2.fastq.gz
-# Output: $PROJECT_DIR/01_qc/01_fastp/<SAMPLE>_R{1,2}.fastp.fastq.gz
-#         $PROJECT_DIR/01_qc/01_fastp/<SAMPLE>.{json,html}  (QC reports)
+# Input:  $PROJECT/00_input/reads/<SAMPLE>_R1.fastq.gz + <SAMPLE>_R2.fastq.gz
+# Output: $PROJECT/00_shared/01_read_qc/fastp/<SAMPLE>_R{1,2}.fastp.fastq.gz
+#         $PROJECT/00_shared/01_read_qc/fastp/<SAMPLE>.{json,html}  (QC reports)
 
 set -e
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
-source $REPO/config/db_paths.sh
-source $REPO/config/envs.sh
-source $REPO/config/threads.sh
+source "$REPO/config.sh"
 
-: ${PROJECT_DIR:?ERROR: export PROJECT_DIR=/path/to/your/project}
 
-IN_DIR=$PROJECT_DIR/00_input/reads
-OUT_DIR=$PROJECT_DIR/01_qc/01_fastp
+
+
+: ${PROJECT:?ERROR: export PROJECT=/path/to/your/project}
+
+IN_DIR=$PROJECT/00_input/reads
+OUT_DIR=$PROJECT/00_shared/01_read_qc/fastp
 mkdir -p $OUT_DIR
 
 activate_env $ENV_FASTP

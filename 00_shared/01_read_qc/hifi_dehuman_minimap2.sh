@@ -1,7 +1,7 @@
 #!/bin/bash
 # === HiFi (PacBio long read) human removal (minimap2 vs GRCh38) ===
-# Input:  $PROJECT_DIR/00_input/reads/<SAMPLE>.fastq.gz   (or .hifi.fastq.gz)
-# Output: $PROJECT_DIR/01_qc/02_dehuman/<SAMPLE>_clean.fastq.gz
+# Input:  $PROJECT/00_input/reads/<SAMPLE>.fastq.gz   (or .hifi.fastq.gz)
+# Output: $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean.fastq.gz
 #
 # Note: HiFi reads are already adapter-trimmed by the PacBio CCS pipeline (lima).
 # fastp is NOT used for HiFi — dehuman is the only QC step here.
@@ -9,14 +9,15 @@
 set -e
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
-source $REPO/config/db_paths.sh
-source $REPO/config/envs.sh
-source $REPO/config/threads.sh
+source "$REPO/config.sh"
 
-: ${PROJECT_DIR:?ERROR: export PROJECT_DIR=/path/to/your/project}
 
-IN_DIR=$PROJECT_DIR/00_input/reads
-OUT_DIR=$PROJECT_DIR/01_qc/02_dehuman
+
+
+: ${PROJECT:?ERROR: export PROJECT=/path/to/your/project}
+
+IN_DIR=$PROJECT/00_input/reads
+OUT_DIR=$PROJECT/00_shared/01_read_qc/dehuman
 mkdir -p $OUT_DIR
 
 activate_env $ENV_MINIMAP2

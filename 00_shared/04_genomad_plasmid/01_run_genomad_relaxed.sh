@@ -1,6 +1,6 @@
 #!/bin/bash
 # === 04.01 geNomad plasmid identification (relaxed -s 4.8 + score calibration) ===
-# Input:  $PROJECT/02_assembly/<SAMPLE>/assembly.fasta | scaffolds.fasta
+# Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly_1kb.fasta | scaffolds.fasta
 # Output: $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid_summary.tsv
 #         $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid.fna
 
@@ -10,7 +10,7 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-ASM_BASE=$PROJECT/02_assembly
+ASM_BASE=$PROJECT/00_shared/02_assembly/metaflye
 OUT_BASE=$PROJECT/04_plasmid
 mkdir -p "$OUT_BASE"
 
@@ -22,8 +22,8 @@ for d in "$ASM_BASE"/*/; do
     [ -d "$d" ] || continue
     sample=$(basename "$d")
 
-    asm="$d/assembly.fasta"
-    [ -f "$asm" ] || asm="$d/scaffolds.fasta"
+    asm="$d/assembly_1kb.fasta"
+    [ -f "$asm" ] || asm="$d/assembly_1kb.fasta"
     [ -f "$asm" ] || { echo "  skip $sample: no assembly"; continue; }
 
     out_dir="$OUT_BASE/$sample"

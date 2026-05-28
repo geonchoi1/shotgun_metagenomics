@@ -195,3 +195,6 @@ export KCLUST_BIN=${KCLUST_BIN:-$HOME/cfp/tools/kClust/kClust}
 # ---- MetaPhlAn4 ----
 export ENV_METAPHLAN=${ENV_METAPHLAN:-metaphlan}
 export METAPHLAN_DB=${METAPHLAN_DB:-$DB_ROOT/metaphlan_db}
+
+# --- Read/contig manipulation ---
+export ENV_SEQKIT=${ENV_SEQKIT:-seqkit}

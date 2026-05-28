@@ -1,19 +1,20 @@
 #!/bin/bash
 # === Illumina human read removal (bowtie2 vs GRCh38) ===
-# Input:  $PROJECT_DIR/01_qc/01_fastp/<SAMPLE>_R{1,2}.fastp.fastq.gz
-# Output: $PROJECT_DIR/01_qc/02_dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz
+# Input:  $PROJECT/00_shared/01_read_qc/fastp/<SAMPLE>_R{1,2}.fastp.fastq.gz
+# Output: $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz
 
 set -e
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
-source $REPO/config/db_paths.sh
-source $REPO/config/envs.sh
-source $REPO/config/threads.sh
+source "$REPO/config.sh"
 
-: ${PROJECT_DIR:?ERROR: export PROJECT_DIR=/path/to/your/project}
 
-IN_DIR=$PROJECT_DIR/01_qc/01_fastp
-OUT_DIR=$PROJECT_DIR/01_qc/02_dehuman
+
+
+: ${PROJECT:?ERROR: export PROJECT=/path/to/your/project}
+
+IN_DIR=$PROJECT/00_shared/01_read_qc/fastp
+OUT_DIR=$PROJECT/00_shared/01_read_qc/dehuman
 mkdir -p $OUT_DIR
 
 activate_env $ENV_BOWTIE2

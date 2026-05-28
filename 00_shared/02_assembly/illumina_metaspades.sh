@@ -1,21 +1,22 @@
 #!/bin/bash
 # === metaSPAdes assembly (Illumina paired-end) ===
-# Input:  $PROJECT_DIR/01_qc/02_dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz
-# Output: $PROJECT_DIR/02_assembly/<SAMPLE>/scaffolds.fasta (canonical assembly)
-#         $PROJECT_DIR/02_assembly/<SAMPLE>/contigs.fasta
+# Input:  $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz
+# Output: $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/scaffolds.fasta (canonical assembly)
+#         $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/contigs.fasta
 #         (per-sample assembly subfolder)
 
 set -e
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
-source $REPO/config/db_paths.sh
-source $REPO/config/envs.sh
-source $REPO/config/threads.sh
+source "$REPO/config.sh"
 
-: ${PROJECT_DIR:?ERROR: export PROJECT_DIR=/path/to/your/project}
 
-IN_DIR=$PROJECT_DIR/01_qc/02_dehuman
-OUT_BASE=$PROJECT_DIR/02_assembly
+
+
+: ${PROJECT:?ERROR: export PROJECT=/path/to/your/project}
+
+IN_DIR=$PROJECT/00_shared/01_read_qc/dehuman
+OUT_BASE=$PROJECT/00_shared/02_assembly/metaflye
 mkdir -p $OUT_BASE
 
 activate_env $ENV_METASPADES
