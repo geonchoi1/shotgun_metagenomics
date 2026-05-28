@@ -12,7 +12,7 @@ bash "$T/02_bakta/run.sh"
 bash "$T/03_master_orf/run.sh"
 
 for step in 04_pfam 05_ncbifam 06_kofamscan 07_eggnog 08_amrfinder 10_vfdb 13_dbcan 18_dbscan_swa \
-            19_isescan 20_integronfinder 21_iceberg3 22_cctyper 11_bacmet 12_defensefinder 23_dbapis; do
+            19_isescan 20_integronfinder 21_iceberg3 22_cctyper; do
     [ -f "$T/$step/run.sh" ] && bash "$T/$step/run.sh"
 done
 
