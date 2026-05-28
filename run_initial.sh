@@ -57,5 +57,6 @@ bash "$S/08_split_binned_unbinned/run.sh"
 
 # 09 Kraken2 + Bracken community-level taxonomy (read-level, independent of MAG)
 bash "$S/09_kraken2_community/run.sh"
+bash "$S/10_metaphlan4_community/run.sh"
 
 echo "[$(date '+%F %T')] === 00_shared DONE ==="

@@ -191,3 +191,7 @@ export ENV_FEATURECOUNTS=${ENV_FEATURECOUNTS:-coverm}
 export KEGG_GMT=${KEGG_GMT:-$DB_ROOT/gsea/kegg_pathway.gmt}
 export DBSCAN_SWA_DIR=${DBSCAN_SWA_DIR:-$HOME/tools/DBSCAN-SWA}
 export KCLUST_BIN=${KCLUST_BIN:-$HOME/cfp/tools/kClust/kClust}
+
+# ---- MetaPhlAn4 ----
+export ENV_METAPHLAN=${ENV_METAPHLAN:-metaphlan}
+export METAPHLAN_DB=${METAPHLAN_DB:-$DB_ROOT/metaphlan_db}
