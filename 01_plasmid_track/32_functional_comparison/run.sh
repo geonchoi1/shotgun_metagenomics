@@ -1,17 +1,17 @@
 #!/bin/bash
 # === Functional comparison across environments ===
 # Counts Pfam/KO per environment (sample-of-origin parsed from contig prefix)
-# Filter ≥MIN_CARRIERS / ≥2 env (Fleiss power analysis: OR=4, BH-FDR α≈0.001, power 0.80)
-# 3 tests x 2 weighting modes x 2 plasmid sets = PCA + GSEA + Fisher
-#   (richness MAIN + TPM-weighted SUPPL ; all_plasmids + complete_plasmids)
+# Filter ≥MIN_CARRIERS / ≥2 env (statsmodels power analysis: OR=4, BH-FDR α≈0.001, power 0.80)
+# 3 tests x 2 weighting modes = PCA + Fisher + GSEA
+#   (richness MAIN + TPM-weighted SUPPL ; all plasmids)
 #
 # Methods aligned with Fiamenghi 2025 (Nat Commun) plasmidome framework:
 #   * Normalize raw counts by env plasmid count (proportion per env)
 #   * sklearn StandardScaler row-wise (per function) before PCA
-#   * PCA computed twice (all plasmids + complete plasmids), per Fiamenghi 2025
 #   * scipy.stats.fisher_exact (two-sided) + scipy.stats.odds_ratio (conditional MLE)
 #   * log_OR = natural log (matches paper); log2OR also reported for convenience
 #   * scipy.stats.false_discovery_control (Benjamini-Hochberg FDR, q<0.05)
+#   * GSEA: rank input = Fisher log_OR (DEG-like pipeline, equivalent to RNA-seq log2FC→GSEA)
 #   * gseapy.prerank (Subramanian 2005 GSEA; equivalent to R fgsea/hypeR)
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -24,7 +24,6 @@ KOFAM_MAPPER=$PROJECT/plasmid/07_kofamscan/kofam.mapper.tsv
 ORF2CONTIG=$PROJECT/plasmid/04_master_orf/orf2contig.tsv
 COVERM_DIR=$PROJECT/plasmid/40_quantification
 SAMPLE_ENV=${SAMPLE_ENV:-$PROJECT/sample_to_env.tsv}   # sample_id<TAB>env
-COMPLETE_PLASMIDS=${COMPLETE_PLASMIDS:-$PROJECT/plasmid/05_complete/complete_circular.txt}  # one contig_id per line
 OUT=$PROJECT/plasmid/32_functional_comparison
 mkdir -p $OUT
 
@@ -123,23 +122,13 @@ for tf in glob.glob("$COVERM_DIR/coverm_*.tsv"):
             try: contig_tpm[p[0]][sample]=float(p[tpm_idx])
             except: pass
 
-# ---- 3.5. Complete plasmid list (optional, for second PCA per Fiamenghi 2025) ----
-complete_set=set()
-if os.path.exists("$COMPLETE_PLASMIDS"):
-    with open("$COMPLETE_PLASMIDS") as f:
-        complete_set=set(l.strip() for l in f if l.strip() and not l.startswith('#'))
-    print(f"[complete plasmid set] loaded {len(complete_set)} circular plasmids from $COMPLETE_PLASMIDS", flush=True)
-else:
-    print(f"[complete plasmid set] WARNING: $COMPLETE_PLASMIDS not found — complete-only PCA will be skipped", flush=True)
-
-# ---- 4. Build env × feature matrices (richness + TPM-weighted), optional contig filter ----
-def build_matrix(orf2feat, contig_filter=None):
+# ---- 4. Build env × feature matrices (richness + TPM-weighted) ----
+def build_matrix(orf2feat):
     envs=set()
     feat_env_richness=defaultdict(lambda: defaultdict(int))
     feat_env_tpm=defaultdict(lambda: defaultdict(float))
     for orf,feats in (orf2feat.items() if isinstance(orf2feat, dict) else []):
         c=orf2c.get(orf)
-        if contig_filter is not None and c not in contig_filter: continue
         e=env_of(orf)
         if not e: continue
         envs.add(e)
@@ -157,11 +146,10 @@ def build_matrix(orf2feat, contig_filter=None):
     envs=sorted(envs)
     return envs, feat_env_richness, feat_env_tpm
 
-# ---- 4.5. Plasmid count per env (for proportion normalization), optional contig filter ----
-def env_plasmid_counts(contig_filter=None):
+# ---- 4.5. Plasmid count per env (for proportion normalization) ----
+def env_plasmid_counts():
     env_p=defaultdict(set)
     for orf,c in orf2c.items():
-        if contig_filter is not None and c not in contig_filter: continue
         s=sample_of(c)
         e=sample_env.get(s,s)
         env_p[e].add(c)
@@ -233,10 +221,11 @@ def fisher_envs(mat_dict, envs, prefix, label):
         if mask.sum() > 0:
             df.loc[mask, 'FDR'] = false_discovery_control(df.loc[mask, 'p'].values)
     df.to_csv(f"{OUT}/{prefix}.fisher.tsv", sep='\t', index=False)
+    return df  # used by gsea_run() for log_OR rank metric
 
-def gsea_run(mat_dict, envs, prefix, n_per_env):
+def gsea_run(fisher_df, envs, prefix):
     """GSEA per env via gseapy.prerank (equivalent to fgsea/hypeR).
-    Rank = proportion(env) - mean(proportion of other envs).
+    Rank = Fisher log_OR (DEG-like pipeline; matches Fiamenghi 2025 method).
     """
     try:
         import gseapy
@@ -246,41 +235,42 @@ def gsea_run(mat_dict, envs, prefix, n_per_env):
     if not os.path.exists("$KEGG_GMT"):
         with open(f"{OUT}/{prefix}.gsea.tsv","w") as o: o.write("KEGG_GMT missing\n")
         return
-    feats=sorted(mat_dict.keys())
-    M=np.array([[mat_dict[f].get(e,0) for e in envs] for f in feats], dtype=float)
-    n_vec=np.array([max(n_per_env.get(e,1),1) for e in envs], dtype=float)
-    P=M / n_vec[np.newaxis, :]
+    if fisher_df is None or len(fisher_df) == 0:
+        with open(f"{OUT}/{prefix}.gsea.tsv","w") as o: o.write("(skipped — fisher empty)\n")
+        return
     out_all=[]
-    for ei,e in enumerate(envs):
-        rank=P[:,ei] - P[:,[j for j in range(len(envs)) if j!=ei]].mean(axis=1)
-        df=pd.DataFrame({'feat':feats,'rank':rank}).sort_values('rank', ascending=False)
+    for e in envs:
+        sub = fisher_df[fisher_df['env'] == e].copy()
+        # Drop NaN/Inf, then clip extreme log_OR to ±10 for GSEA stability
+        sub = sub[sub['log_OR'].notna() & np.isfinite(sub['log_OR'])]
+        if len(sub) < 5: continue
+        sub['log_OR'] = sub['log_OR'].clip(-10, 10)
+        rnk = (sub[['feature','log_OR']]
+               .sort_values('log_OR', ascending=False)
+               .rename(columns={'feature':'gene','log_OR':'rank'}))
         try:
-            r=gseapy.prerank(rnk=df, gene_sets="$KEGG_GMT", outdir=None, min_size=5, max_size=2000, seed=42)
-            res=r.res2d.copy(); res['env']=e
+            r = gseapy.prerank(rnk=rnk, gene_sets="$KEGG_GMT", outdir=None,
+                               min_size=5, max_size=2000, seed=42)
+            res = r.res2d.copy(); res['env'] = e
             out_all.append(res)
         except Exception as ex:
             print(f"gsea {e} fail: {ex}")
     if out_all:
         pd.concat(out_all).to_csv(f"{OUT}/{prefix}.gsea.tsv", sep='\t', index=False)
 
-# ---- 5. Run all combinations: 2 plasmid sets × 2 annotations × 2 modes ----
-plasmid_sets = [("all", None)]
-if complete_set:
-    plasmid_sets.append(("complete", complete_set))
+# ---- 5. Run all combinations: 2 annotations × 2 modes ----
+n_per_env = env_plasmid_counts()
+print(f"\nplasmids per env: {dict(sorted(n_per_env.items()))}", flush=True)
 
-for set_name, contig_filter in plasmid_sets:
-    print(f"\n=== plasmid set: {set_name} ===", flush=True)
-    n_per_env = env_plasmid_counts(contig_filter)
-    print(f"  plasmids per env: {dict(sorted(n_per_env.items()))}", flush=True)
-    for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
-        envs, mat_rich, mat_tpm = build_matrix(src, contig_filter)
-        if not envs: continue
-        for mode, mat in [("richness", mat_rich), ("tpm", mat_tpm)]:
-            prefix=f"{set_name}_{label}_{mode}"
-            write_pca(mat, envs, prefix, label, n_per_env)
-            fisher_envs(mat, envs, prefix, label)
-            if label=="ko":
-                gsea_run(mat, envs, prefix, n_per_env)
+for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
+    envs, mat_rich, mat_tpm = build_matrix(src)
+    if not envs: continue
+    for mode, mat in [("richness", mat_rich), ("tpm", mat_tpm)]:
+        prefix=f"{label}_{mode}"
+        write_pca(mat, envs, prefix, label, n_per_env)
+        fisher_df = fisher_envs(mat, envs, prefix, label)   # returns df with log_OR
+        if label=="ko":
+            gsea_run(fisher_df, envs, prefix)               # GSEA ranked by log_OR
 print("functional comparison done")
 PYEOF
 echo "[$(date '+%F %T')] DONE"
