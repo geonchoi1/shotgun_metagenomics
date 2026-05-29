@@ -6,7 +6,9 @@
 #   * richness MAIN — Fisher exact (binary count) + log_OR + GSEA(log_OR rank)
 #                     Fiamenghi 2025-style: divide by env plasmid count -> proportion -> StandardScaler -> PCA
 #   * TPM-weighted SUPPL — Mann-Whitney U (continuous) + log2FC + GSEA(log2FC rank)
-#                     TPM is already sample-level normalized; no further normalization before PCA/test
+#                     TPM divided by env plasmidome TPM total -> within-env relative abundance
+#                     (sample-level TPM is already normalized by CoverM; within-env normalization
+#                     removes env plasmidome-dominance confound, matches richness's env-size removal)
 #
 # Packages:
 #   * statsmodels.stats.power.NormalIndPower  — MIN_CARRIERS helper (compute_min_carriers.py)
@@ -125,12 +127,15 @@ for tf in glob.glob("$COVERM_DIR/coverm_*.tsv"):
 # ---- 4. Build env × feature structures (richness count, TPM sum, TPM distribution) ----
 # mat_rich[f][e]      : ORF count (richness)
 # mat_tpm_sum[f][e]   : sum of contig TPM across plasmids carrying f in env e (for PCA)
-# mat_tpm_dist[f][e]  : list of per-ORF contig TPMs (for Mann-Whitney U distribution comparison)
+# mat_tpm_dist[f][e]     : list of per-ORF contig TPMs (for Mann-Whitney U distribution comparison)
+# env_plasmidome_tpm[e]  : total plasmid-borne TPM per env (contig-deduped) — for option-B normalize
 def build_matrix(orf2feat):
     envs=set()
     mat_rich=defaultdict(lambda: defaultdict(int))
     mat_tpm_sum=defaultdict(lambda: defaultdict(float))
     mat_tpm_dist=defaultdict(lambda: defaultdict(list))
+    env_plasmidome_tpm=defaultdict(float)
+    seen_contigs=defaultdict(set)
     for orf,feats in (orf2feat.items() if isinstance(orf2feat, dict) else []):
         c=orf2c.get(orf)
         e=env_of(orf)
@@ -146,8 +151,12 @@ def build_matrix(orf2feat):
                 mat_tpm_sum[f_][e] += tpm_in_env
                 if tpm_in_env > 0:
                     mat_tpm_dist[f_][e].append(tpm_in_env)
+            # env plasmidome total, contig-deduped (avoid multi-ORF/multi-feature overcounting)
+            if c not in seen_contigs[e]:
+                seen_contigs[e].add(c)
+                env_plasmidome_tpm[e] += tpm_in_env
     envs=sorted(envs)
-    return envs, mat_rich, mat_tpm_sum, mat_tpm_dist
+    return envs, mat_rich, mat_tpm_sum, mat_tpm_dist, dict(env_plasmidome_tpm)
 
 # ---- 4.5. Plasmid count per env (for richness proportion only) ----
 def env_plasmid_counts():
@@ -158,10 +167,11 @@ def env_plasmid_counts():
         env_p[e].add(c)
     return {e:len(s) for e,s in env_p.items()}
 
-def write_pca(mat_dict, envs, prefix, label, n_per_env=None):
+def write_pca(mat_dict, envs, prefix, label, n_per_env=None, env_total_tpm=None):
     """PCA with row-wise StandardScaler.
-    If n_per_env given (richness mode), divide by env plasmid count first -> proportion.
-    If None (TPM mode), use values as-is (TPM is already sample-level normalized).
+    Exactly one of (n_per_env, env_total_tpm) should be set:
+      * richness mode: n_per_env (divide by env plasmid count -> proportion)
+      * TPM mode:      env_total_tpm (divide by env plasmidome TPM total -> within-env relative)
     """
     feats=sorted(mat_dict.keys())
     if len(feats)<3 or len(envs)<2:
@@ -174,8 +184,13 @@ def write_pca(mat_dict, envs, prefix, label, n_per_env=None):
         n_vec=np.array([max(n_per_env.get(e,1),1) for e in envs], dtype=float)
         Pk=Mk / n_vec[np.newaxis, :]
         pd.DataFrame(Pk, index=fk, columns=envs).to_csv(f"{OUT}/{prefix}.proportion.tsv", sep='\t')
+    elif env_total_tpm is not None:
+        # TPM: divide by env plasmidome TPM total -> within-env relative abundance (Σ=1 per env)
+        n_vec=np.array([max(env_total_tpm.get(e,1e-9),1e-9) for e in envs], dtype=float)
+        Pk=Mk / n_vec[np.newaxis, :]
+        pd.DataFrame(Pk, index=fk, columns=envs).to_csv(f"{OUT}/{prefix}.proportion.tsv", sep='\t')
     else:
-        # TPM: use raw aggregated TPM directly
+        # Fallback: no normalize
         Pk=Mk
     # Row-wise StandardScaler then PCA
     Z=StandardScaler().fit_transform(Pk.T).T
@@ -228,19 +243,25 @@ def fisher_envs(mat_dict, envs, prefix, label):
     df.to_csv(f"{OUT}/{prefix}.fisher.tsv", sep='\t', index=False)
     return df  # consumed by gsea_run (rank by log_OR)
 
-def mwu_envs(mat_dist, envs, prefix, label):
+def mwu_envs(mat_dist, envs, prefix, label, env_total_tpm=None):
     """TPM mode: Mann-Whitney U (env vs rest) + log2FC + rank-biserial + BH-FDR.
     Input mat_dist[f][e] is a list of per-ORF contig TPMs.
+    If env_total_tpm given, each TPM is divided by env plasmidome TPM total
+    (within-env relative abundance) to remove env plasmidome-dominance confound.
     """
     feats=sorted(mat_dist.keys())
     rows=[]
+    def _scale(vals, e):
+        if env_total_tpm is None: return list(vals)
+        denom = env_total_tpm.get(e, 1e-9) or 1e-9
+        return [v / denom for v in vals]
     for f_ in feats:
         for e in envs:
-            X1 = mat_dist[f_].get(e, [])
+            X1 = _scale(mat_dist[f_].get(e, []), e)
             X2 = []
             for ef in envs:
                 if ef != e:
-                    X2.extend(mat_dist[f_].get(ef, []))
+                    X2.extend(_scale(mat_dist[f_].get(ef, []), ef))
             n1, n2 = len(X1), len(X2)
             if n1 < 3 or n2 < 3:
                 continue
@@ -303,8 +324,9 @@ n_per_env = env_plasmid_counts()
 print(f"\nplasmids per env: {dict(sorted(n_per_env.items()))}", flush=True)
 
 for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
-    envs, mat_rich, mat_tpm_sum, mat_tpm_dist = build_matrix(src)
+    envs, mat_rich, mat_tpm_sum, mat_tpm_dist, env_total_tpm = build_matrix(src)
     if not envs: continue
+    print(f"  {label}: env plasmidome TPM totals: {dict((k, round(v,1)) for k,v in sorted(env_total_tpm.items()))}", flush=True)
     # === Filter on RICHNESS-COUNT basis (same feature set for both modes) ===
     feats_all=sorted(mat_rich.keys())
     M_rich=np.array([[mat_rich[f].get(e,0) for e in envs] for f in feats_all], dtype=float)
@@ -322,10 +344,10 @@ for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
     if label=="ko":
         gsea_run(fisher_df, envs, prefix_rich, rank_col='log_OR')
 
-    # TPM branch — MW-U + log2FC + GSEA(log2FC rank)
+    # TPM branch — within-env relative (÷ env plasmidome TPM) + MW-U + log2FC + GSEA(log2FC rank)
     prefix_tpm=f"{label}_tpm"
-    write_pca(mat_tpm_sum_f, envs, prefix_tpm, label, n_per_env=None)  # no normalize
-    mwu_df = mwu_envs(mat_tpm_dist_f, envs, prefix_tpm, label)
+    write_pca(mat_tpm_sum_f, envs, prefix_tpm, label, env_total_tpm=env_total_tpm)
+    mwu_df = mwu_envs(mat_tpm_dist_f, envs, prefix_tpm, label, env_total_tpm=env_total_tpm)
     if label=="ko":
         gsea_run(mwu_df, envs, prefix_tpm, rank_col='log2FC')
 
