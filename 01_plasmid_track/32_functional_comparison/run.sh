@@ -156,14 +156,15 @@ def env_plasmid_counts():
     return {e:len(s) for e,s in env_p.items()}
 
 def write_pca(mat_dict, envs, prefix, label, n_per_env):
-    """PCA after (1) divide by env plasmid count, (2) row-wise StandardScaler."""
+    """PCA after (1) divide by env plasmid count, (2) row-wise StandardScaler.
+    Filtering is applied upstream (richness-count basis) before this call.
+    """
     feats=sorted(mat_dict.keys())
-    M=np.array([[mat_dict[f].get(e,0) for e in envs] for f in feats], dtype=float)
-    keep=[i for i,row in enumerate(M) if row.sum()>=MIN_CARRIERS and (row>0).sum()>=2]
-    if len(keep)<3 or len(envs)<2:
+    if len(feats)<3 or len(envs)<2:
         with open(f"{OUT}/{prefix}.pca.tsv","w") as o: o.write("(skipped — too few)\n")
         return None,None
-    Mk=M[keep,:]; fk=[feats[i] for i in keep]
+    Mk=np.array([[mat_dict[f].get(e,0) for e in envs] for f in feats], dtype=float)
+    fk=feats
     # Step 1: normalize by env plasmid count → proportion per env (Fiamenghi 2025)
     n_vec=np.array([max(n_per_env.get(e,1),1) for e in envs], dtype=float)
     Pk=Mk / n_vec[np.newaxis, :]
@@ -186,12 +187,11 @@ def write_pca(mat_dict, envs, prefix, label, n_per_env):
 def fisher_envs(mat_dict, envs, prefix, label):
     """Per-env vs rest Fisher exact (two-sided) + conditional MLE OR + BH-FDR.
     Reports log_OR (natural log, matches Fiamenghi 2025 paper text) AND log2OR (convenience).
+    Filtering is applied upstream (richness-count basis) before this call.
     """
     feats=sorted(mat_dict.keys())
     rows=[]
     M=np.array([[mat_dict[f].get(e,0) for e in envs] for f in feats], dtype=float)
-    keep=[i for i,row in enumerate(M) if row.sum()>=MIN_CARRIERS and (row>0).sum()>=2]
-    M=M[keep,:]; feats=[feats[i] for i in keep]
     total=M.sum()
     for fi,f_ in enumerate(feats):
         for ei,e in enumerate(envs):
@@ -265,7 +265,16 @@ print(f"\nplasmids per env: {dict(sorted(n_per_env.items()))}", flush=True)
 for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
     envs, mat_rich, mat_tpm = build_matrix(src)
     if not envs: continue
-    for mode, mat in [("richness", mat_rich), ("tpm", mat_tpm)]:
+    # === Filter on RICHNESS-COUNT basis (richness ≥ MIN_CARRIERS AND ≥2 envs) ===
+    # Apply the SAME feature set to both richness and TPM modes so they are directly comparable.
+    feats_all=sorted(mat_rich.keys())
+    M_rich=np.array([[mat_rich[f].get(e,0) for e in envs] for f in feats_all], dtype=float)
+    keep_feats=set(feats_all[i] for i,row in enumerate(M_rich)
+                   if row.sum()>=MIN_CARRIERS and (row>0).sum()>=2)
+    mat_rich_f={f:v for f,v in mat_rich.items() if f in keep_feats}
+    mat_tpm_f ={f:v for f,v in mat_tpm.items()  if f in keep_feats}
+    print(f"  {label}: filtered {len(keep_feats)} / {len(feats_all)} features (MIN_CARRIERS={MIN_CARRIERS})", flush=True)
+    for mode, mat in [("richness", mat_rich_f), ("tpm", mat_tpm_f)]:
         prefix=f"{label}_{mode}"
         write_pca(mat, envs, prefix, label, n_per_env)
         fisher_df = fisher_envs(mat, envs, prefix, label)   # returns df with log_OR
