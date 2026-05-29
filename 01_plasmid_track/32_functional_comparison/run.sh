@@ -17,7 +17,7 @@
 #   * scipy.stats.mannwhitneyu                 — TPM test
 #   * scipy.stats.false_discovery_control       — BH-FDR
 #   * gseapy.prerank (Subramanian 2005; equivalent to R fgsea/hypeR)
-set -euo pipefail
+set -eo pipefail   # -u removed: conda activate references unset internal vars
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
