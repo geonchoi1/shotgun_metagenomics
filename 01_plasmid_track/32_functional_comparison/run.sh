@@ -28,7 +28,7 @@ KOFAM_MAPPER=$PROJECT/01_plasmid_track/07_kofamscan/kofam_mapper.tsv
 ORF2CONTIG=$PROJECT/01_plasmid_track/04_master_orf/orf2contig.tsv
 COVERM_DIR=$PROJECT/01_plasmid_track/40_quantification
 SAMPLE_ENV=${SAMPLE_ENV:-$PROJECT/sample_to_env.tsv}   # sample_id<TAB>env (optional; fallback: sample==env)
-OUT=$PROJECT/01_plasmid_track/32_functional_comparison
+OUT=${OUT:-$PROJECT/01_plasmid_track/32_functional_comparison}
 mkdir -p $OUT
 
 KEGG_GMT=${KEGG_GMT:-$DB_ROOT/gsea/kegg_pathway.gmt}
@@ -349,19 +349,15 @@ for label, src in [("pfam", orf2pfam), ("ko", orf2ko)]:
     envs, mat_rich, mat_tpm_sum, mat_tpm_dist, env_total_tpm = build_matrix(src)
     if not envs: continue
     print(f"  {label}: env plasmidome TPM totals: {dict((k, round(v,1)) for k,v in sorted(env_total_tpm.items()))}", flush=True)
-    # === Filters (separate per mode) ===
-    # Richness mode: carrier >= MIN_CARRIERS AND non-zero in >=2 envs
-    # TPM mode:      only non-zero in >=2 envs (MW-U enforces n>=3 per group on its own)
+    # === Shared filter (richness-count basis applied to BOTH modes) ===
     feats_all = sorted(mat_rich.keys())
     M_rich = np.array([[mat_rich[f].get(e,0) for e in envs] for f in feats_all], dtype=float)
-    keep_rich = set(feats_all[i] for i,row in enumerate(M_rich)
-                    if row.sum()>=MIN_CARRIERS and (row>0).sum()>=2)
-    keep_tpm  = set(feats_all[i] for i,row in enumerate(M_rich)
-                    if (row>0).sum()>=2)
-    mat_rich_f      = {f:v for f,v in mat_rich.items()     if f in keep_rich}
-    mat_tpm_sum_f   = {f:v for f,v in mat_tpm_sum.items()  if f in keep_tpm}
-    mat_tpm_dist_f  = {f:v for f,v in mat_tpm_dist.items() if f in keep_tpm}
-    print(f"  {label}: richness-mode filter {len(keep_rich)} / TPM-mode filter {len(keep_tpm)} (MIN_CARRIERS={MIN_CARRIERS})", flush=True)
+    keep_feats = set(feats_all[i] for i,row in enumerate(M_rich)
+                     if row.sum()>=MIN_CARRIERS and (row>0).sum()>=2)
+    mat_rich_f      = {f:v for f,v in mat_rich.items()     if f in keep_feats}
+    mat_tpm_sum_f   = {f:v for f,v in mat_tpm_sum.items()  if f in keep_feats}
+    mat_tpm_dist_f  = {f:v for f,v in mat_tpm_dist.items() if f in keep_feats}
+    print(f"  {label}: filtered {len(keep_feats)} / {len(feats_all)} features (MIN_CARRIERS={MIN_CARRIERS})", flush=True)
 
     # Richness branch — Fisher + log_OR + GSEA(log_OR rank)
     prefix_rich=f"{label}_richness"
