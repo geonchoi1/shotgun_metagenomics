@@ -23,12 +23,12 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-PFAM_TBLOUT=$PROJECT/plasmid/05_pfam/pfam.tblout
-KOFAM_MAPPER=$PROJECT/plasmid/07_kofamscan/kofam.mapper.tsv
-ORF2CONTIG=$PROJECT/plasmid/04_master_orf/orf2contig.tsv
-COVERM_DIR=$PROJECT/plasmid/40_quantification
-SAMPLE_ENV=${SAMPLE_ENV:-$PROJECT/sample_to_env.tsv}   # sample_id<TAB>env
-OUT=$PROJECT/plasmid/32_functional_comparison
+PFAM_TBLOUT=$PROJECT/01_plasmid_track/05_pfam/pfam.tblout
+KOFAM_MAPPER=$PROJECT/01_plasmid_track/07_kofamscan/kofam_mapper.tsv
+ORF2CONTIG=$PROJECT/01_plasmid_track/04_master_orf/orf2contig.tsv
+COVERM_DIR=$PROJECT/01_plasmid_track/40_quantification
+SAMPLE_ENV=${SAMPLE_ENV:-$PROJECT/sample_to_env.tsv}   # sample_id<TAB>env (optional; fallback: sample==env)
+OUT=$PROJECT/01_plasmid_track/32_functional_comparison
 mkdir -p $OUT
 
 KEGG_GMT=${KEGG_GMT:-$DB_ROOT/gsea/kegg_pathway.gmt}
@@ -109,20 +109,42 @@ with open("$KOFAM_MAPPER") as f:
         if len(p)>=2 and p[1]: orf2ko[p[0]]=p[1]
 
 # ---- 3. TPM table per contig (CoverM output; already sample-level normalized to 1e6) ----
+# Supports either:
+#   (a) per-sample files  coverm_<sample>.tsv  with a 'TPM' column
+#   (b) a single combined tpm_matrix.tsv with columns "<sample>_TPM"
 contig_tpm=defaultdict(dict)
 import glob
-for tf in glob.glob("$COVERM_DIR/coverm_*.tsv"):
-    sample=os.path.basename(tf).replace('coverm_','').replace('.tsv','')
-    with open(tf) as f:
-        header=f.readline().split('\t')
-        tpm_idx=None
-        for i,h in enumerate(header):
-            if 'TPM' in h: tpm_idx=i; break
-        if tpm_idx is None: continue
+per_sample = sorted(glob.glob("$COVERM_DIR/coverm_*.tsv"))
+combined   = os.path.join("$COVERM_DIR", "tpm_matrix.tsv")
+if per_sample:
+    for tf in per_sample:
+        sample=os.path.basename(tf).replace('coverm_','').replace('.tsv','')
+        with open(tf) as f:
+            header=f.readline().rstrip('\n').split('\t')
+            tpm_idx=None
+            for i,h in enumerate(header):
+                if 'TPM' in h: tpm_idx=i; break
+            if tpm_idx is None: continue
+            for line in f:
+                p=line.rstrip('\n').split('\t')
+                try: contig_tpm[p[0]][sample]=float(p[tpm_idx])
+                except: pass
+elif os.path.exists(combined):
+    with open(combined) as f:
+        header=f.readline().rstrip('\n').split('\t')
+        # columns after Contig are like "<sample>_TPM" or "<sample> TPM"
+        sample_cols=[]
+        for i,h in enumerate(header[1:], start=1):
+            s = h.replace('_TPM','').replace(' TPM','').strip()
+            sample_cols.append((i, s))
         for line in f:
             p=line.rstrip('\n').split('\t')
-            try: contig_tpm[p[0]][sample]=float(p[tpm_idx])
-            except: pass
+            if not p or not p[0]: continue
+            for i, s in sample_cols:
+                try: contig_tpm[p[0]][s] = float(p[i])
+                except: pass
+else:
+    print(f"WARNING: no CoverM output found in {COVERM_DIR}", flush=True)
 
 # ---- 4. Build env × feature structures (richness count, TPM sum, TPM distribution) ----
 # mat_rich[f][e]      : ORF count (richness)
