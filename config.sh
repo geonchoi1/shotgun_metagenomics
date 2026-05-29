@@ -152,7 +152,9 @@ export ENV_MMSEQS=${ENV_MMSEQS:-mmseqs2}
 # Activation helper — `source` this in each script then call `activate_env $ENV_NAME`
 activate_env() {
     if [ -z "$1" ]; then echo "activate_env: env name required" >&2; return 1; fi
-    if [ -z "$CONDA_EXE" ]; then
+    # Source conda.sh whenever the 'conda' shell function isn't defined.
+    # CONDA_EXE alone is not enough — `conda activate` requires the function form.
+    if ! type conda 2>/dev/null | head -1 | grep -q function; then
         source ~/anaconda3/etc/profile.d/conda.sh
     fi
     conda activate "$1"
