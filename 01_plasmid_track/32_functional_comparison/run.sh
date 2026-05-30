@@ -24,7 +24,7 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 PFAM_TBLOUT=${PFAM_TBLOUT:-$PROJECT/01_plasmid_track/05_pfam/pfam.tblout}
-KOFAM_MAPPER=${KOFAM_MAPPER:-$PROJECT/01_plasmid_track/07_kofamscan/kofam_mapper.tsv}
+KOFAM_MAPPER=${KOFAM_MAPPER:-$PROJECT/01_plasmid_track/07_kofam/kofam_mapper.tsv}
 ORF2CONTIG=${ORF2CONTIG:-$PROJECT/01_plasmid_track/04_master_orf/orf2contig.tsv}
 COVERM_DIR=${COVERM_DIR:-$PROJECT/01_plasmid_track/40_quantification}
 SAMPLE_ENV=${SAMPLE_ENV:-$PROJECT/sample_to_env.tsv}   # sample_id<TAB>env (optional; fallback: sample==env)
