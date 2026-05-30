@@ -4,10 +4,11 @@
 # hmmsearch against the concatenated KOfam HMM database (genome.jp/ftp/db/kofam/).
 #
 # Cutoff modes (KOFAM_CUTOFF_MODE):
-#   uniform (default) — per-KO bit-score threshold from KOfam ko_list (KOfamScan-equivalent).
-#                         KOs without an adaptive threshold fall back to KOFAM_EVALUE.
-#   uniform            — single user-provided E-value (KOFAM_EVALUE) and optional
+#   uniform  (default) — single user-provided E-value (KOFAM_EVALUE=1e-5) and optional
 #                         bit-score (KOFAM_SCORE) applied to ALL KOs (lenient broad scan).
+#   adaptive           — per-KO bit-score threshold from KOfam ko_list (KOfamScan-
+#                         equivalent). KOs without an adaptive threshold fall back
+#                         to KOFAM_EVALUE.
 #
 # Environment variables:
 #   KOFAM_DB          = /mnt/nas/DB/geon/kofam_db
