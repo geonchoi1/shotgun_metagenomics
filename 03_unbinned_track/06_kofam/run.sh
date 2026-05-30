@@ -4,7 +4,7 @@
 # hmmsearch against the concatenated KOfam HMM database (genome.jp/ftp/db/kofam/).
 #
 # Cutoff modes (KOFAM_CUTOFF_MODE):
-#   adaptive (default) — per-KO bit-score threshold from KOfam ko_list (KOfamScan-equivalent).
+#   uniform (default) — per-KO bit-score threshold from KOfam ko_list (KOfamScan-equivalent).
 #                         KOs without an adaptive threshold fall back to KOFAM_EVALUE.
 #   uniform            — single user-provided E-value (KOFAM_EVALUE) and optional
 #                         bit-score (KOFAM_SCORE) applied to ALL KOs (lenient broad scan).
@@ -14,7 +14,7 @@
 #   QUERY_FAA         = $PROJECT/03_unbinned_track/03_master_orf/unbinned.master.faa
 #   OUT               = $PROJECT/03_unbinned_track/06_kofam
 #   THREADS           = 112
-#   KOFAM_CUTOFF_MODE = adaptive | uniform     (default adaptive)
+#   KOFAM_CUTOFF_MODE = adaptive | uniform     (default uniform)
 #   KOFAM_EVALUE      = 1e-5
 #   KOFAM_SCORE       = (empty; uniform mode only)
 #   KOFAM_PRE_EVALUE  = 1e-2 (broad pre-filter; per-KO threshold applied below)
@@ -30,7 +30,7 @@ QUERY_FAA=${QUERY_FAA:-$PROJECT/03_unbinned_track/03_master_orf/unbinned.master.
 OUT=${OUT:-$PROJECT/03_unbinned_track/06_kofam}
 THREADS=${THREADS:-112}
 
-KOFAM_CUTOFF_MODE=${KOFAM_CUTOFF_MODE:-adaptive}
+KOFAM_CUTOFF_MODE=${KOFAM_CUTOFF_MODE:-uniform}
 KOFAM_EVALUE=${KOFAM_EVALUE:-1e-5}
 KOFAM_SCORE=${KOFAM_SCORE:-}
 KOFAM_PRE_EVALUE=${KOFAM_PRE_EVALUE:-1e-2}
