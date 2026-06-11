@@ -30,7 +30,6 @@ gtdbtk classify_wf \
     --extension fa \
     --cpus "$THREADS_GTDBTK" \
     --pplacer_cpus "${PPLACER_CPUS:-32}" \
-    --skip_ani_screen \
     > "$OUT_DIR/run.log" 2>&1
 
 echo "[$(date '+%F %T')] DONE"
