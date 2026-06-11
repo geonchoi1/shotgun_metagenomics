@@ -84,6 +84,7 @@ run_metabinner() {
         -o "$(readlink -f "$out")" \
         -p "$mb_dir" \
         -t "$THREADS" \
+        -s small \
         > "$out/run.log" 2>&1 || true
 }
 
