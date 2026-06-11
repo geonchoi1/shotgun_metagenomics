@@ -16,7 +16,7 @@ Raw reads (Illumina or HiFi)
       ▼ 00_shared/03_genomad_virus/  geNomad default            → VIRUS
       ▼ 00_shared/04_genomad_plasmid/ -s 4.8 --relaxed + F1-F5  → PLASMID
       │
-      ▼ 05_topology_split/           uses user-provided circ_frag_map.tsv
+      ▼ 05_topology_split/           auto topology from 02_assembly/contig_topology.tsv
       ▼ 06_chromosomal_extract/      assembly − plasmid − virus = chromosomal
       ▼ 07_mag_production/           mapping → binning → DAS_Tool → CheckM2
       │                              → barrnap + tRNAscan → dRep species (95%)
@@ -126,53 +126,38 @@ Installed locally via `tools/install_*.sh`:
 
 ## Inputs the user must provide
 
-Each project has its own working directory (the repo is the **tool set**, not the data location):
+Each project has its own working directory (the repo is the **tool set**, not the data location).
+The **only** required input is the raw reads under `00_input/reads/`; everything else is auto-created
+under `00_shared/` and the four `0N_*_track/` directories:
 
 ```
 my_project/
 ├── 00_input/
-│   ├── reads/                        # *.fastq.gz (per-sample)
-│   └── circ_frag_map.tsv             # USER-provided: contig→topology
-├── 01_qc/                            # auto-created by pipeline
-├── 02_assembly/                      # auto-created
-└── ...
+│   └── reads/                        # *.fastq.gz (per-sample) — the ONLY required input
+├── 00_shared/                        # auto: 01_read_qc, 02_assembly, 03_genomad_virus,
+│                                     #       04_genomad_plasmid, 05_topology_split,
+│                                     #       06_chromosomal_extract, 07_mag_production,
+│                                     #       08_split_binned_unbinned, 09_kraken2_community, ...
+├── 01_plasmid_track/                 # auto
+├── 02_mag_track/                     # auto
+├── 03_unbinned_track/                # auto
+└── 04_cross_track/                   # auto
 ```
 
-### `circ_frag_map.tsv` format
+### Circular topology is derived automatically (no user map)
 
-Two-column TSV (header required):
+Circular/fragmented status comes from metaFlye `assembly_info.txt` (`circ.` column = Y/N) and is
+written once to the master file:
 
 ```
-contig_id	topology
-IN|contig_11059	circ
-IN|contig_11447	circ
-IN|contig_42177	linear
-Anaerobic|contig_10318	linear
-...
+00_shared/02_assembly/contig_topology.tsv      # <sample>|<contig> <TAB> circ|frag   (auto)
 ```
 
-- `contig_id` must match assembly FASTA headers (and downstream geNomad output)
-- `topology` ∈ {`circ`, `linear`}
-
-#### Generation example (PacBio HiFi metaFlye)
-
-`assembly_info.txt` has `circ.` column (Y/N):
-
-```bash
-for s in SAMPLES; do
-  tail -n +2 assembly/$s/assembly_info.txt | \
-    awk -v s=$s -v OFS='\t' '{ t=($4=="Y")?"circ":"linear"; print s"|"$1, t }'
-done > circ_frag_map.tsv
-```
-
-#### For Illumina (metaSPAdes)
-
-metaSPAdes rarely emits circular flags. Default everything to `linear`:
-
-```bash
-grep "^>" assembly/contigs.fasta | sed 's/^>//;s/ .*//' | \
-  awk -v OFS='\t' '{print $1, "linear"}' > circ_frag_map.tsv
-```
+This single file is the source of truth for plasmid (`05_topology_split`), MAG and unbinned
+(`08_split_binned_unbinned` → `circ.ids`, `circ_mag.tsv`) topology — Bakta runs `--complete` on
+circular replicons. Steps regenerate it from `assembly_info.txt` if missing, so no user-provided
+`circ_frag_map.tsv` is needed. (Illumina/metaSPAdes assemblies have no circular flags → everything
+defaults to `frag`.)
 
 ---
 
@@ -206,7 +191,7 @@ Each track follows the **ORF-first** pattern:
 | 02 | `02_assembly/` | `metaSPAdes` (Illumina) / `metaFlye --meta --pacbio-hifi` (HiFi) |
 | 03 | `03_genomad_virus/` | geNomad **default** → virus contigs |
 | 04 | `04_genomad_plasmid/` | geNomad **-s 4.8 --relaxed --enable-score-calibration** → 5-filter:<br>F1 score ≥ 0.7, F2 FDR < 0.05, F3 hallmark ≥ 1, F4 USCG ≤ 1, **F5 no rRNA (Infernal cmscan vs Rfam — separate step)** |
-| 05 | `05_topology_split/` | Uses user-provided `circ_frag_map.tsv` → plasmid `circ/` + `frag/` |
+| 05 | `05_topology_split/` | Splits plasmids by auto `contig_topology.tsv` → `circ/` + `frag/` |
 | 06 | `06_chromosomal_extract/` | assembly − plasmid − virus = chromosomal |
 | 07 | `07_mag_production/` | Mapping (minimap2 long / BWA short) → depth (jgi) → binning → DAS_Tool → CheckM2 → Barrnap rRNA → tRNAscan-SE → dRep species (95%, main) + strain (99%, supp) → MIMAG → GTDB-Tk |
 | 08 | `08_split_binned_unbinned/` | chromosomal contigs → MAG-binned set + unbinned set |
@@ -330,11 +315,10 @@ pip install -r requirements.txt
 bash tools/install_oritfinder2.sh
 bash tools/install_ares_arroyo.sh
 
-# 5) Stage your project inputs
+# 5) Stage your project inputs (reads are the ONLY required input)
 mkdir -p ~/my_project/00_input/reads
 cp /path/to/reads/*.fastq.gz ~/my_project/00_input/reads/
-# Provide circ_frag_map.tsv (see format above)
-vim ~/my_project/00_input/circ_frag_map.tsv
+# Circular topology is auto-derived from metaFlye assembly_info — no user map needed.
 
 # 6) Run the full pipeline
 export READ_TYPE=hifi             # or "illumina"
