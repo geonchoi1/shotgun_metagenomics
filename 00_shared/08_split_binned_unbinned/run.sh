@@ -2,11 +2,12 @@
 # === 08 Split chromosomal contigs into binned vs unbinned (+ circular topology) ===
 # Binned   = chromosomal contig captured in ANY DAS_Tool MAG (any sample)
 # Unbinned = the rest
-# Circular topology is taken from metaFlye assembly_info (col 4 "circ." = Y/N) so the
-# MAG (02_mag_track) and unbinned (03_unbinned_track) tracks can run Bakta with
-# --complete on circular replicons.
+# Circular topology is read from the MASTER contig_topology.tsv (auto-generated from
+# metaFlye assembly_info, the same single source 05 uses for plasmids) so the MAG
+# (02_mag_track) and unbinned (03_unbinned_track) tracks can run Bakta --complete on
+# circular replicons.
 #
-# Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly_info.txt
+# Input:  $PROJECT/00_shared/02_assembly/contig_topology.tsv  (auto; <sample>|<contig> TAB circ|frag)
 #         $PROJECT/00_shared/06_chromosomal_extract/<SAMPLE>/chromosomal.fasta
 #         $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
 #         $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa
@@ -25,7 +26,22 @@ CHR_BASE=$PROJECT/00_shared/06_chromosomal_extract
 DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
 DREP_DIR=$PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes
 OUT_BASE=$PROJECT/00_shared/08_split_binned_unbinned
+MASTER=$PROJECT/00_shared/02_assembly/contig_topology.tsv
 mkdir -p "$OUT_BASE/binned" "$OUT_BASE/unbinned"
+
+# Auto-generate the master topology from metaFlye assembly_info if missing.
+if [ ! -s "$MASTER" ]; then
+    echo "[$(date '+%F %T')] generating master contig_topology.tsv from assembly_info"
+    : > "$MASTER"
+    for info in "$ASM_BASE"/*/assembly_info.txt; do
+        [ -s "$info" ] || continue
+        s=$(basename "$(dirname "$info")")
+        awk -F'\t' -v s="$s" 'NR>1{print s"|"$1"\t"($4=="Y"?"circ":"frag")}' "$info" >> "$MASTER"
+    done
+fi
+# circular <sample>|<contig> keys (master is the single source of truth)
+CIRC_MASTER=$OUT_BASE/.circ_master.ids
+awk -F'\t' '$2=="circ"{print $1}' "$MASTER" > "$CIRC_MASTER" 2>/dev/null || : > "$CIRC_MASTER"
 
 BINNED_FA=$OUT_BASE/binned/all.fna
 UNBINNED_FA=$OUT_BASE/unbinned/all.fna
@@ -52,26 +68,21 @@ for d in "$CHR_BASE"/*/; do
     fi
     sort -u "$bin_ids" -o "$bin_ids"
 
-    # circular contig IDs for this sample (assembly_info col4 == Y)
-    info="$ASM_BASE/$sample/assembly_info.txt"
-    circ_set="$OUT_BASE/.circ_${sample}.ids"
-    if [ -s "$info" ]; then awk -F'\t' 'NR>1 && $4=="Y"{print $1}' "$info" > "$circ_set"; else : > "$circ_set"; fi
-
-    # append (>>) binned/unbinned FASTAs (prefixed) and circular IDs
-    awk -v s="$sample" -v ids="$bin_ids" -v circ="$circ_set" \
+    # append (>>) binned/unbinned FASTAs (prefixed) and circular IDs (from master)
+    awk -v s="$sample" -v ids="$bin_ids" -v circ="$CIRC_MASTER" \
         -v bo="$BINNED_FA" -v uo="$UNBINNED_FA" -v bc="$BIN_CIRC" -v uc="$UNB_CIRC" '
         BEGIN{ while((getline l < ids)>0) keep[l]=1; while((getline c < circ)>0) iscirc[c]=1 }
         /^>/{
             id=$1; sub(/^>/,"",id)
             binned=(id in keep)
             out = binned ? bo : uo
-            print ">" s "|" id >> out
-            if(id in iscirc){ if(binned) print s"|"id >> bc; else print s"|"id >> uc }
+            key = s "|" id
+            print ">" key >> out
+            if(key in iscirc){ if(binned) print key >> bc; else print key >> uc }
             next
         }
         { print >> out }
     ' "$chr"
-    rm -f "$circ_set"
     echo "    $sample done (binned=$(grep -c '^>' $BINNED_FA), unbinned=$(grep -c '^>' $UNBINNED_FA))"
 done
 
@@ -84,17 +95,17 @@ if [ -d "$DREP_DIR" ] && ls "$DREP_DIR"/*.fa >/dev/null 2>&1; then
         [ -f "$mag" ] || continue
         name=$(basename "$mag" .fa)
         sample=${name%%__*}
-        info="$ASM_BASE/$sample/assembly_info.txt"
         n_ctg=$(grep -c '^>' "$mag")
         label=frag
-        if [ "$n_ctg" -eq 1 ] && [ -s "$info" ]; then
+        if [ "$n_ctg" -eq 1 ]; then
             ctg=$(grep '^>' "$mag" | head -1 | sed -e 's/^>//' -e 's/ .*//')
-            awk -F'\t' -v c="$ctg" 'NR>1 && $1==c && $4=="Y"{f=1} END{exit !f}' "$info" && label=circ
+            grep -qxF "${sample}|${ctg}" "$CIRC_MASTER" && label=circ
         fi
         printf '%s\t%s\n' "$name" "$label" >> "$CIRC_MAG"
     done
     echo "  circ_mag.tsv: $(awk -F'\t' '$2=="circ"' "$CIRC_MAG" | wc -l) circ / $(wc -l < "$CIRC_MAG") MAGs"
 fi
+rm -f "$CIRC_MASTER"
 
 echo "[$(date '+%F %T')] DONE"
 echo "  binned   : $(grep -c '^>' $BINNED_FA) contigs ($(wc -l < $BIN_CIRC) circular)"

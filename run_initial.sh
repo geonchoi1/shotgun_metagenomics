@@ -33,7 +33,7 @@ bash "$S/04_genomad_plasmid/01_run_genomad_relaxed.sh"
 bash "$S/04_genomad_plasmid/02_filter_F1234.sh"
 bash "$S/04_genomad_plasmid/03_filter_F5_rrna.sh"
 
-# 05 Topology split (uses user-provided circ_frag_map.tsv)
+# 05 Topology split (auto topology from assembly_info; no user map)
 bash "$S/05_topology_split/split_from_user_list.sh"
 
 # 06 Chromosomal extract
