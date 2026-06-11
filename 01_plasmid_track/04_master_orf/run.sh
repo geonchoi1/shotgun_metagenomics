@@ -1,16 +1,16 @@
 #!/bin/bash
 # === Combine Bakta circ+frag FAA/GFF/FFN into master ORF set ===
 # Outputs:
-#   $PROJECT/plasmid/04_master_orf/{circ,frag,all}/master.{faa,gff,ffn}
-#   $PROJECT/plasmid/04_master_orf/orf2contig.tsv      (locus_tag -> contig)
+#   $PROJECT/01_plasmid_track/04_master_orf/{circ,frag,all}/master.{faa,gff,ffn}
+#   $PROJECT/01_plasmid_track/04_master_orf/orf2contig.tsv      (locus_tag -> contig)
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BAKTA=$PROJECT/plasmid/03_bakta
-OUT=$PROJECT/plasmid/04_master_orf
+BAKTA=$PROJECT/01_plasmid_track/03_bakta
+OUT=$PROJECT/01_plasmid_track/04_master_orf
 mkdir -p $OUT/circ $OUT/frag $OUT/all
 
 copy_one() {

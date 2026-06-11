@@ -5,9 +5,9 @@
 # F3: n_hallmarks          >= 1
 # F4: conjugation_genes... not used; USCG (universal single-copy genes) <= 1
 #
-# Input:  $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid_summary.tsv
-# Output: $PROJECT/04_plasmid/<SAMPLE>/F1234.ids
-#         $PROJECT/04_plasmid/<SAMPLE>/F1234.tsv
+# Input:  $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid_summary.tsv
+# Output: $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/F1234.ids
+#         $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/F1234.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -15,7 +15,7 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BASE=$PROJECT/04_plasmid
+BASE=$PROJECT/00_shared/04_genomad_plasmid
 
 echo "[$(date '+%F %T')] F1-F4 filter (score>=0.7, FDR<0.05, n_hallmarks>=1, USCG<=1)"
 for d in "$BASE"/*/; do

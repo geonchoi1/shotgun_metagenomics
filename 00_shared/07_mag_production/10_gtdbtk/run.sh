@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 07.10 GTDB-Tk classify_wf on species-dereplicated MAGs ===
-# Input:  $PROJECT/07_mag/08_drep_species/dereplicated_genomes/*.fa
-# Output: $PROJECT/07_mag/10_gtdbtk/classify/gtdbtk.{bac120,ar53}.summary.tsv
+# Input:  $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa
+# Output: $PROJECT/00_shared/07_mag_production/10_gtdbtk/classify/gtdbtk.{bac120,ar53}.summary.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN_DIR=$PROJECT/07_mag/08_drep_species/dereplicated_genomes
-OUT_DIR=$PROJECT/07_mag/10_gtdbtk
+IN_DIR=$PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes
+OUT_DIR=$PROJECT/00_shared/07_mag_production/10_gtdbtk
 mkdir -p "$OUT_DIR"
 
 [ -d "$IN_DIR" ] && ls "$IN_DIR"/*.fa 2>/dev/null | grep -q . \

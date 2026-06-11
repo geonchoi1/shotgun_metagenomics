@@ -4,10 +4,10 @@ Step 5: Module extraction — for each ARG with an MGE within +-5 kb (uses Step 
 'strict' or 'standard' tier rows), extract the contig region spanning
 ARG ± 5 kb flanking. Modules contain at least one MGE.
 
-Input:  $PROJECT/cross/mobile_arg/step4/{src}_arg_mge_distance.tsv
+Input:  $PROJECT/04_cross_track/mobile_arg/step4/{src}_arg_mge_distance.tsv
         per-source contig FASTAs (PL: 01_raw_fasta/all/*.fna ; MAG: master.fna ; UB: master.fna)
-Output: $PROJECT/cross/mobile_arg/step5/{src}_modules.fna
-        $PROJECT/cross/mobile_arg/step5/{src}_modules.tsv  (module_id, contig, start, end, ARGs, MGEs)
+Output: $PROJECT/04_cross_track/mobile_arg/step5/{src}_modules.fna
+        $PROJECT/04_cross_track/mobile_arg/step5/{src}_modules.tsv  (module_id, contig, start, end, ARGs, MGEs)
 """
 import os
 import sys

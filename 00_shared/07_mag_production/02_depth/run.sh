@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 07.02 Per-contig depth via jgi_summarize_bam_contig_depths (metabat2 env) ===
-# Input:  $PROJECT/07_mag/01_mapping/<SAMPLE>.bam
-# Output: $PROJECT/07_mag/02_depth/<SAMPLE>_depth.txt
+# Input:  $PROJECT/00_shared/07_mag_production/01_mapping/<SAMPLE>.bam
+# Output: $PROJECT/00_shared/07_mag_production/02_depth/<SAMPLE>_depth.txt
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BAM_DIR=$PROJECT/07_mag/01_mapping
-OUT_DIR=$PROJECT/07_mag/02_depth
+BAM_DIR=$PROJECT/00_shared/07_mag_production/01_mapping
+OUT_DIR=$PROJECT/00_shared/07_mag_production/02_depth
 mkdir -p "$OUT_DIR"
 
 activate_env "$ENV_METABAT2"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 21 ICEberg3 (ICE/IME) DIAMOND blastp on UB ORFs ===
-# Input:  $PROJECT/unbinned/03_master_orf/all/master.faa
-# Output: $PROJECT/unbinned/21_iceberg3/all/iceberg3.tsv
+# Input:  $PROJECT/03_unbinned_track/03_master_orf/all/master.faa
+# Output: $PROJECT/03_unbinned_track/21_iceberg3/all/iceberg3.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN=$PROJECT/unbinned/03_master_orf/all/master.faa
-OUT=$PROJECT/unbinned/21_iceberg3/all
+IN=$PROJECT/03_unbinned_track/03_master_orf/all/master.faa
+OUT=$PROJECT/03_unbinned_track/21_iceberg3/all
 mkdir -p "$OUT"
 
 [ -s "$IN" ] || { echo "ERROR: missing $IN" >&2; exit 1; }

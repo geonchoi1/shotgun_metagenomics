@@ -2,8 +2,8 @@
 # === 10 VFDB virulence factor on MAG ===
 # DIAMOND blastp vs VFDB setB (extended) — pathogen / virulence gene detection
 #
-# Input:  $PROJECT/mag/03_master_orf/all/master.faa
-# Output: $PROJECT/mag/10_vfdb/vfdb.tsv
+# Input:  $PROJECT/02_mag_track/03_master_orf/all/master.faa
+# Output: $PROJECT/02_mag_track/10_vfdb/vfdb.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,8 +11,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-MASTER=$PROJECT/mag/03_master_orf/all/master.faa
-OUT=$PROJECT/mag/10_vfdb
+MASTER=$PROJECT/02_mag_track/03_master_orf/all/master.faa
+OUT=$PROJECT/02_mag_track/10_vfdb
 mkdir -p "$OUT"
 
 [ -s "$MASTER" ] || { echo "ERROR: missing $MASTER" >&2; exit 1; }

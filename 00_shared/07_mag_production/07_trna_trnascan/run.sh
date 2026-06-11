@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 07.07 tRNAscan-SE per MAG (-B bac; -A arc optional) ===
-# Input:  $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
-# Output: $PROJECT/07_mag/07_trna/<MAG>.bac.tsv
-#         $PROJECT/07_mag/07_trna/<MAG>.arc.tsv (if RUN_ARC=1)
+# Input:  $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
+# Output: $PROJECT/00_shared/07_mag_production/07_trna/<MAG>.bac.tsv
+#         $PROJECT/00_shared/07_mag_production/07_trna/<MAG>.arc.tsv (if RUN_ARC=1)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,8 +10,8 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-DAS_BASE=$PROJECT/07_mag/04_dastool
-OUT_DIR=$PROJECT/07_mag/07_trna
+DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
+OUT_DIR=$PROJECT/00_shared/07_mag_production/07_trna
 mkdir -p "$OUT_DIR"
 
 RUN_ARC=${RUN_ARC:-1}

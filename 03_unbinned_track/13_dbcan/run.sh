@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 13 dbCAN (CAZymes) on UB master ORFs ===
-# Input:  $PROJECT/unbinned/03_master_orf/all/master.faa
-# Output: $PROJECT/unbinned/13_dbcan/all/overview.txt + hmmer/dimaond/dbsub results
+# Input:  $PROJECT/03_unbinned_track/03_master_orf/all/master.faa
+# Output: $PROJECT/03_unbinned_track/13_dbcan/all/overview.txt + hmmer/dimaond/dbsub results
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN=$PROJECT/unbinned/03_master_orf/all/master.faa
-OUT=$PROJECT/unbinned/13_dbcan/all
+IN=$PROJECT/03_unbinned_track/03_master_orf/all/master.faa
+OUT=$PROJECT/03_unbinned_track/13_dbcan/all
 mkdir -p "$OUT"
 
 [ -s "$IN" ] || { echo "ERROR: missing $IN" >&2; exit 1; }

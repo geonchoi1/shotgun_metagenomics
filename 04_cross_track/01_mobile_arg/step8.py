@@ -5,7 +5,7 @@ Step 8: ARG mobility network — Cytoscape/Gephi compatible nodes + edges.
 Node = contig (annotated with source PL/MAG/UB and optional pOTU/taxonomy).
 Edge = mobility link from step7 (one edge per (query_contig, target_contig, ARG, tier)).
 
-Outputs (under $PROJECT/cross/mobile_arg/step8/):
+Outputs (under $PROJECT/04_cross_track/mobile_arg/step8/):
   nodes.tsv:  id, source, n_args, attrs(potu, taxonomy)
   edges.tsv:  source, target, ARG, identity_tier, pathway, potu_relation, pident, length
 """

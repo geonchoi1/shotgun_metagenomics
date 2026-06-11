@@ -8,8 +8,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-READ_DIR=$PROJECT/shared/01_read_qc
-OUT=$PROJECT/shared/10_metaphlan4_community
+READ_DIR=$PROJECT/00_shared/01_read_qc
+OUT=$PROJECT/00_shared/10_metaphlan4_community
 mkdir -p $OUT
 
 [ -s $OUT/merged_metaphlan.tsv ] && { echo "skip (exists)"; exit 0; }

@@ -1,11 +1,11 @@
 #!/bin/bash
 # === 41 Gene-level abundance (Method 2 of doi:10.1186/s40793-026-00892-w) ===
-# Input:  $PROJECT/mag/03_master_orf/all/master.ffn   (gene nucleotides)
-#         $PROJECT/mag/03_master_orf/all/master.gff3
-#         $PROJECT/01_qc/02_dehuman/*_clean.fastq.gz
-#         $PROJECT/mag/04_pfam/pfam.tblout
-#         $PROJECT/mag/06_kofamscan/kofam_mapper.tsv
-# Output: $PROJECT/mag/41_gene_abundance/{bam,counts,tpm,pfam,kofam,pathway}/
+# Input:  $PROJECT/02_mag_track/03_master_orf/all/master.ffn   (gene nucleotides)
+#         $PROJECT/02_mag_track/03_master_orf/all/master.gff3
+#         $PROJECT/00_shared/01_read_qc/dehuman/*_clean.fastq.gz
+#         $PROJECT/02_mag_track/04_pfam/pfam.tblout
+#         $PROJECT/02_mag_track/06_kofamscan/kofam_mapper.tsv
+# Output: $PROJECT/02_mag_track/41_gene_abundance/{bam,counts,tpm,pfam,kofam,pathway}/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -13,12 +13,12 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FFN=$PROJECT/mag/03_master_orf/all/master.ffn
-GFF=$PROJECT/mag/03_master_orf/all/master.gff3
-READS_DIR=$PROJECT/01_qc/02_dehuman
-PFAM_TBL=$PROJECT/mag/04_pfam/pfam.tblout
-KOFAM_TSV=$PROJECT/mag/06_kofamscan/kofam_mapper.tsv
-OUT=$PROJECT/mag/41_gene_abundance
+FFN=$PROJECT/02_mag_track/03_master_orf/all/master.ffn
+GFF=$PROJECT/02_mag_track/03_master_orf/all/master.gff3
+READS_DIR=$PROJECT/00_shared/01_read_qc/dehuman
+PFAM_TBL=$PROJECT/02_mag_track/04_pfam/pfam.tblout
+KOFAM_TSV=$PROJECT/02_mag_track/06_kofamscan/kofam_mapper.tsv
+OUT=$PROJECT/02_mag_track/41_gene_abundance
 mkdir -p "$OUT"/{bam,counts,tpm,pfam,kofam,pathway}
 
 [ -s "$FFN" ] || { echo "ERROR: master.ffn missing" >&2; exit 1; }

@@ -1,9 +1,9 @@
 #!/bin/bash
 # === 40 CoverM genome — relative abundance / trimmed_mean / covered_fraction / TPM ===
-# Input:  $PROJECT/07_mag/08_drep_species/dereplicated_genomes/*.fa  (genome dir)
-#         $PROJECT/01_qc/02_dehuman/*_clean.fastq.gz                  (HiFi reads)
-# Output: $PROJECT/mag/40_coverm/<sample>.tsv
-#         $PROJECT/mag/40_coverm/coverm_tpm_matrix.tsv
+# Input:  $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa  (genome dir)
+#         $PROJECT/00_shared/01_read_qc/dehuman/*_clean.fastq.gz                  (HiFi reads)
+# Output: $PROJECT/02_mag_track/40_coverm/<sample>.tsv
+#         $PROJECT/02_mag_track/40_coverm/coverm_tpm_matrix.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,9 +11,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-GENOME_DIR=$PROJECT/07_mag/08_drep_species/dereplicated_genomes
-READS_DIR=$PROJECT/01_qc/02_dehuman
-OUT=$PROJECT/mag/40_coverm
+GENOME_DIR=$PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes
+READS_DIR=$PROJECT/00_shared/01_read_qc/dehuman
+OUT=$PROJECT/02_mag_track/40_coverm
 mkdir -p "$OUT"
 
 [ -d "$GENOME_DIR" ] || { echo "ERROR: $GENOME_DIR missing" >&2; exit 1; }

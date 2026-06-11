@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/plasmid/04_master_orf/all/master.faa
-OUT=$PROJECT/plasmid/13_dbapis
+FAA=$PROJECT/01_plasmid_track/04_master_orf/all/master.faa
+OUT=$PROJECT/01_plasmid_track/13_dbapis
 mkdir -p $OUT
 
 [ -s $OUT/apis.tblout ] && { echo "skip (exists)"; exit 0; }

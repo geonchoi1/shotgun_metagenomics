@@ -1,9 +1,9 @@
 #!/bin/bash
 # === 08 AMRFinderPlus on UB master ORFs (protein mode + nucleotide context) ===
-# Input:  $PROJECT/unbinned/03_master_orf/all/master.faa
-#         $PROJECT/unbinned/03_master_orf/all/master.gff (Bakta gff3)
-#         $PROJECT/unbinned/03_master_orf/all/master.fna
-# Output: $PROJECT/unbinned/08_amrfinder/all/amrfinder.tsv
+# Input:  $PROJECT/03_unbinned_track/03_master_orf/all/master.faa
+#         $PROJECT/03_unbinned_track/03_master_orf/all/master.gff (Bakta gff3)
+#         $PROJECT/03_unbinned_track/03_master_orf/all/master.fna
+# Output: $PROJECT/03_unbinned_track/08_amrfinder/all/amrfinder.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,8 +11,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-ORF_DIR=$PROJECT/unbinned/03_master_orf/all
-OUT=$PROJECT/unbinned/08_amrfinder/all
+ORF_DIR=$PROJECT/03_unbinned_track/03_master_orf/all
+OUT=$PROJECT/03_unbinned_track/08_amrfinder/all
 mkdir -p "$OUT"
 
 [ -s "$ORF_DIR/master.faa" ] || { echo "ERROR: missing master.faa" >&2; exit 1; }

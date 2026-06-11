@@ -3,9 +3,9 @@
 # Each MAG fasta is scanned with barrnap --kingdom bac and --kingdom arc.
 # Output GFFs contain 5S/16S/23S calls.
 #
-# Input:  $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
-# Output: $PROJECT/07_mag/06_rrna/<MAG>.bac.gff
-#         $PROJECT/07_mag/06_rrna/<MAG>.arc.gff
+# Input:  $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
+# Output: $PROJECT/00_shared/07_mag_production/06_rrna/<MAG>.bac.gff
+#         $PROJECT/00_shared/07_mag_production/06_rrna/<MAG>.arc.gff
 # (MAG name = <SAMPLE>__<bin>.fa)
 
 set -euo pipefail
@@ -14,8 +14,8 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-DAS_BASE=$PROJECT/07_mag/04_dastool
-OUT_DIR=$PROJECT/07_mag/06_rrna
+DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
+OUT_DIR=$PROJECT/00_shared/07_mag_production/06_rrna
 mkdir -p "$OUT_DIR"
 
 activate_env "$ENV_BARRNAP"

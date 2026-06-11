@@ -1,9 +1,9 @@
 #!/bin/bash
 # === 03 Master ORF aggregation ===
-# Input:  $PROJECT/mag/02_bakta/{circ,frag}/<MAG>/<MAG>.{faa,ffn,gff3}
-# Output: $PROJECT/mag/03_master_orf/{circ,frag,all}/master.{faa,ffn,gff3}
-#         $PROJECT/mag/03_master_orf/per_mag/<MAG>/{mag.faa,mag.ffn,mag.gff3}
-#         $PROJECT/mag/03_master_orf/all/orf2contig.tsv  (locus_tag<TAB>contig<TAB>MAG)
+# Input:  $PROJECT/02_mag_track/02_bakta/{circ,frag}/<MAG>/<MAG>.{faa,ffn,gff3}
+# Output: $PROJECT/02_mag_track/03_master_orf/{circ,frag,all}/master.{faa,ffn,gff3}
+#         $PROJECT/02_mag_track/03_master_orf/per_mag/<MAG>/{mag.faa,mag.ffn,mag.gff3}
+#         $PROJECT/02_mag_track/03_master_orf/all/orf2contig.tsv  (locus_tag<TAB>contig<TAB>MAG)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,8 +11,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BAKTA_BASE=$PROJECT/mag/02_bakta
-OUT=$PROJECT/mag/03_master_orf
+BAKTA_BASE=$PROJECT/02_mag_track/02_bakta
+OUT=$PROJECT/02_mag_track/03_master_orf
 mkdir -p "$OUT"/{circ,frag,all,per_mag}
 
 echo "[$(date '+%F %T')] master ORF builder"

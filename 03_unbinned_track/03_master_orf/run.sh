@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 03 Master ORF (UB): combine circ + frag Bakta outputs ===
-# Input:  $PROJECT/unbinned/02_bakta/{circ/unbinned_circ,frag/unbinned_frag}.{faa,ffn,gff3}
-# Output: $PROJECT/unbinned/03_master_orf/{circ,frag,all}/master.{faa,ffn,gff}
-#         $PROJECT/unbinned/03_master_orf/all/orf2contig.tsv
+# Input:  $PROJECT/03_unbinned_track/02_bakta/{circ/unbinned_circ,frag/unbinned_frag}.{faa,ffn,gff3}
+# Output: $PROJECT/03_unbinned_track/03_master_orf/{circ,frag,all}/master.{faa,ffn,gff}
+#         $PROJECT/03_unbinned_track/03_master_orf/all/orf2contig.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,8 +10,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BAK=$PROJECT/unbinned/02_bakta
-OUT=$PROJECT/unbinned/03_master_orf
+BAK=$PROJECT/03_unbinned_track/02_bakta
+OUT=$PROJECT/03_unbinned_track/03_master_orf
 mkdir -p "$OUT"/{circ,frag,all}
 
 # circ subset (may be empty if no circ contigs)

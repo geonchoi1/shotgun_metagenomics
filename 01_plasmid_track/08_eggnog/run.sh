@@ -6,8 +6,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/plasmid/04_master_orf/all/master.faa
-OUT=$PROJECT/plasmid/08_eggnog
+FAA=$PROJECT/01_plasmid_track/04_master_orf/all/master.faa
+OUT=$PROJECT/01_plasmid_track/08_eggnog
 mkdir -p $OUT
 
 [ -s $OUT/eggnog.emapper.annotations ] && { echo "skip (exists)"; exit 0; }

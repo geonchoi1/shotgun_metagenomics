@@ -6,7 +6,7 @@ For each source (plasmid / mag / unbinned), produces a contig-level matrix
 where rows = contigs and columns = ARG genes (from AMRFinder) plus MGE classes
 (IS_*, integron, ICE). Cell = 1 if that feature is present on the contig.
 
-Output: $PROJECT/cross/mobile_arg/step2/{plasmid,mag,unbinned}_arg_mge_matrix.tsv
+Output: $PROJECT/04_cross_track/mobile_arg/step2/{plasmid,mag,unbinned}_arg_mge_matrix.tsv
 """
 import os
 import sys

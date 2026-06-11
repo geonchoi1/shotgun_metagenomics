@@ -8,11 +8,11 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/plasmid/04_master_orf/all/master.faa
-ORF2CONTIG=$PROJECT/plasmid/04_master_orf/orf2contig.tsv
-T1=$PROJECT/plasmid/30_clustering/track1/pOTU_membership.tsv
-T3=$PROJECT/plasmid/30_clustering/track3/combined_clusters.tsv
-OUT=$PROJECT/plasmid/31_accnet
+FAA=$PROJECT/01_plasmid_track/04_master_orf/all/master.faa
+ORF2CONTIG=$PROJECT/01_plasmid_track/04_master_orf/orf2contig.tsv
+T1=$PROJECT/01_plasmid_track/30_clustering/track1/pOTU_membership.tsv
+T3=$PROJECT/01_plasmid_track/30_clustering/track3/combined_clusters.tsv
+OUT=$PROJECT/01_plasmid_track/31_accnet
 mkdir -p $OUT/internal $OUT/external
 
 KCLUST=${KCLUST_BIN:-$HOME/cfp/tools/kClust/kClust}

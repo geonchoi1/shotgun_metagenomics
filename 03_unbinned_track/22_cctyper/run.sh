@@ -3,9 +3,9 @@
 # Detect Cas operons + extract CRISPR spacers from unbinned chromosomal contigs.
 # Contig-based (not ORF-based) — independent of Bakta re-runs.
 #
-# Input:  $PROJECT/unbinned/01_raw_fasta/{circ,frag}/unbinned.fna
-# Output: $PROJECT/unbinned/22_cctyper/{circ,frag}/  (cctyper output)
-#         $PROJECT/unbinned/22_cctyper/all_ub_spacers.fa  (NR100 via cd-hit-est)
+# Input:  $PROJECT/03_unbinned_track/01_raw_fasta/{circ,frag}/unbinned.fna
+# Output: $PROJECT/03_unbinned_track/22_cctyper/{circ,frag}/  (cctyper output)
+#         $PROJECT/03_unbinned_track/22_cctyper/all_ub_spacers.fa  (NR100 via cd-hit-est)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -13,8 +13,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN_BASE=$PROJECT/unbinned/01_raw_fasta
-OUT=$PROJECT/unbinned/22_cctyper
+IN_BASE=$PROJECT/03_unbinned_track/01_raw_fasta
+OUT=$PROJECT/03_unbinned_track/22_cctyper
 mkdir -p "$OUT"
 
 activate_env "$ENV_CCTYPER"

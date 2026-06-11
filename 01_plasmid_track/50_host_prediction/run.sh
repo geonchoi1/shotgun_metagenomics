@@ -1,6 +1,6 @@
 #!/bin/bash
 # === Plasmid host prediction — Track A (per-MAG cctyper) + C (iPHoP CRISPR ref) + D (Mash+NUCmer) ===
-# Track A: needs $PROJECT/mag/22_cctyper/per_mag/*/spacers/*.fa (or run here per MAG)
+# Track A: needs $PROJECT/02_mag_track/22_cctyper/per_mag/*/spacers/*.fa (or run here per MAG)
 # Track C: BLAST plasmid vs iPHoP CRISPR DB
 # Track D: Mash vs PLSDB sketch (D≤0.1, P≤0.1) + NUCmer validation (id≥90, len≥500)
 # Integration: union → per-plasmid host range + pOTU aggregation
@@ -10,15 +10,15 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-PLASMID=$PROJECT/plasmid/02_drep/dereplicated.fna
-OUT=$PROJECT/plasmid/50_host_prediction
+PLASMID=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+OUT=$PROJECT/01_plasmid_track/50_host_prediction
 mkdir -p $OUT/trackA $OUT/trackC $OUT/trackD
 
 PLSDB_META=${PLSDB_META:-$PLSDB_DIR/metadata/plsdb.csv}
 
 ############ TRACK A — per-MAG cctyper spacer → plasmid ############
 TA=$OUT/trackA
-CCTYPER_DIR=${CCTYPER_DIR:-$PROJECT/mag/22_cctyper/per_mag}
+CCTYPER_DIR=${CCTYPER_DIR:-$PROJECT/02_mag_track/22_cctyper/per_mag}
 if [ -d "$CCTYPER_DIR" ] && [ ! -s $TA/spacer_plasmid_filtered.tsv ]; then
   echo "[$(date '+%F %T')] TrackA — aggregate MAG spacers"
   > $TA/all_mag_spacers.fa

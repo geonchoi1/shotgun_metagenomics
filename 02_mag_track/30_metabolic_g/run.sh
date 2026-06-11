@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 30 METABOLIC-G on dereplicated MAGs ===
-# Input:  $PROJECT/07_mag/08_drep_species/dereplicated_genomes/*.fa
+# Input:  $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa
 #         (re-linked as .fasta because METABOLIC requires .fasta extension)
-# Output: $PROJECT/mag/30_metabolic_g/
+# Output: $PROJECT/02_mag_track/30_metabolic_g/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,8 +10,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-SRC=$PROJECT/07_mag/08_drep_species/dereplicated_genomes
-OUT=$PROJECT/mag/30_metabolic_g
+SRC=$PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes
+OUT=$PROJECT/02_mag_track/30_metabolic_g
 STAGE=$OUT/_input_fasta
 mkdir -p "$OUT" "$STAGE"
 

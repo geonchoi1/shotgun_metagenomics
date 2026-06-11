@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 21 ICEberg3 BLASTn (mobile element / ICE / IME) ===
-# Input:  $PROJECT/mag/19_isescan/work/all_mag.fna  (per-MAG concat)
-# Output: $PROJECT/mag/21_iceberg3/iceberg3.tsv
+# Input:  $PROJECT/02_mag_track/19_isescan/work/all_mag.fna  (per-MAG concat)
+# Output: $PROJECT/02_mag_track/21_iceberg3/iceberg3.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,11 +9,11 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-RAW_BASE=$PROJECT/mag/01_raw_fasta
-OUT=$PROJECT/mag/21_iceberg3
+RAW_BASE=$PROJECT/02_mag_track/01_raw_fasta
+OUT=$PROJECT/02_mag_track/21_iceberg3
 mkdir -p "$OUT"
 
-CONCAT=$PROJECT/mag/19_isescan/work/all_mag.fna
+CONCAT=$PROJECT/02_mag_track/19_isescan/work/all_mag.fna
 if [ ! -s "$CONCAT" ]; then
     echo "[$(date '+%F %T')] building per-MAG concat FNA"
     mkdir -p "$(dirname "$CONCAT")"

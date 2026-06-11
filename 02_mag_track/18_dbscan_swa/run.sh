@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 18 DBSCAN-SWA (prophage detection) per MAG ===
-# Input:  $PROJECT/mag/01_raw_fasta/{circ,frag}/*.fa
-# Output: $PROJECT/mag/18_dbscan_swa/<MAG>/
+# Input:  $PROJECT/02_mag_track/01_raw_fasta/{circ,frag}/*.fa
+# Output: $PROJECT/02_mag_track/18_dbscan_swa/<MAG>/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN_BASE=$PROJECT/mag/01_raw_fasta
-OUT_BASE=$PROJECT/mag/18_dbscan_swa
+IN_BASE=$PROJECT/02_mag_track/01_raw_fasta
+OUT_BASE=$PROJECT/02_mag_track/18_dbscan_swa
 mkdir -p "$OUT_BASE"
 
 activate_env "$ENV_DBSCANSWA"

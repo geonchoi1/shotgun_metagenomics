@@ -6,8 +6,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-AS=$PROJECT/plasmid/17_antismash
-OUT=$PROJECT/plasmid/18_bigscape
+AS=$PROJECT/01_plasmid_track/17_antismash
+OUT=$PROJECT/01_plasmid_track/18_bigscape
 mkdir -p $OUT $OUT/input_gbks
 
 [ -d $OUT/network_files ] && { echo "skip (exists)"; exit 0; }

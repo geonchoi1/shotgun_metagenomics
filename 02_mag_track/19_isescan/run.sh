@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 19 ISEScan on master FNA (per-MAG concat) ===
-# Input:  $PROJECT/mag/03_master_orf/all/master.fna  (built here from MAG raw fastas if missing)
-# Output: $PROJECT/mag/19_isescan/prediction/<...>.is.fna, *.tsv
+# Input:  $PROJECT/02_mag_track/03_master_orf/all/master.fna  (built here from MAG raw fastas if missing)
+# Output: $PROJECT/02_mag_track/19_isescan/prediction/<...>.is.fna, *.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-RAW_BASE=$PROJECT/mag/01_raw_fasta
-OUT=$PROJECT/mag/19_isescan
+RAW_BASE=$PROJECT/02_mag_track/01_raw_fasta
+OUT=$PROJECT/02_mag_track/19_isescan
 WORK="$OUT/work"
 mkdir -p "$OUT" "$WORK"
 

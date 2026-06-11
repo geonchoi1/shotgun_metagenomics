@@ -6,8 +6,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FNA=$PROJECT/plasmid/02_drep/dereplicated.fna
-OUT=$PROJECT/plasmid/20_isescan
+FNA=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+OUT=$PROJECT/01_plasmid_track/20_isescan
 mkdir -p $OUT
 
 [ -s $OUT/results/$(basename $FNA).tsv ] && { echo "skip (exists)"; exit 0; }

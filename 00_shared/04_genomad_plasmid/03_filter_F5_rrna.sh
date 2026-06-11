@@ -2,11 +2,11 @@
 # === 04.03 F5 rRNA filter (Infernal cmscan vs RFAM_CM) ===
 # Removes any F1234 contig that has an rRNA hit (5S/16S/23S, bac+arc).
 #
-# Input:  $PROJECT/04_plasmid/<SAMPLE>/F1234.ids
-#         $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid.fna
-# Output: $PROJECT/04_plasmid/<SAMPLE>/F12345.ids
-#         $PROJECT/04_plasmid/<SAMPLE>/F12345.fna
-#         $PROJECT/04_plasmid/all_putative.fna   (aggregated)
+# Input:  $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/F1234.ids
+#         $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid.fna
+# Output: $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/F12345.ids
+#         $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/F12345.fna
+#         $PROJECT/00_shared/04_genomad_plasmid/all_putative.fna   (aggregated)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -14,7 +14,7 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-BASE=$PROJECT/04_plasmid
+BASE=$PROJECT/00_shared/04_genomad_plasmid
 [ -f "$RFAM_CM" ] || { echo "ERROR: RFAM_CM not found: $RFAM_CM" >&2; exit 2; }
 
 activate_env "$ENV_INFERNAL"

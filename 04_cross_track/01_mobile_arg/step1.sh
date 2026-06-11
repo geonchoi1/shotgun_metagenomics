@@ -1,7 +1,7 @@
 #!/bin/bash
 # === Step 1: verify MGE annotations exist in all 3 tracks ===
 # Checks ISEScan + IntegronFinder + ICEberg3 outputs in plasmid/MAG/UB tracks.
-# Output: $PROJECT/cross/mobile_arg/step1/availability.tsv
+# Output: $PROJECT/04_cross_track/mobile_arg/step1/availability.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,31 +9,31 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-OUT=$PROJECT/cross/mobile_arg/step1
+OUT=$PROJECT/04_cross_track/mobile_arg/step1
 mkdir -p "$OUT"
 
 # (source_label, track_root, isescan, integronfinder, iceberg3, amrfinder)
 declare -a SRC=(plasmid mag unbinned)
 
 declare -A IS=(
-    [plasmid]="$PROJECT/plasmid/20_isescan/all"
-    [mag]="$PROJECT/mag/19_isescan/all"
-    [unbinned]="$PROJECT/unbinned/19_isescan/all"
+    [plasmid]="$PROJECT/01_plasmid_track/20_isescan/all"
+    [mag]="$PROJECT/02_mag_track/19_isescan/all"
+    [unbinned]="$PROJECT/03_unbinned_track/19_isescan/all"
 )
 declare -A IF=(
-    [plasmid]="$PROJECT/plasmid/21_integronfinder/all"
-    [mag]="$PROJECT/mag/20_integronfinder/all"
-    [unbinned]="$PROJECT/unbinned/20_integronfinder/all"
+    [plasmid]="$PROJECT/01_plasmid_track/21_integronfinder/all"
+    [mag]="$PROJECT/02_mag_track/20_integronfinder/all"
+    [unbinned]="$PROJECT/03_unbinned_track/20_integronfinder/all"
 )
 declare -A IC=(
-    [plasmid]="$PROJECT/plasmid/22_iceberg3/all/iceberg3.tsv"
-    [mag]="$PROJECT/mag/21_iceberg3/all/iceberg3.tsv"
-    [unbinned]="$PROJECT/unbinned/21_iceberg3/all/iceberg3.tsv"
+    [plasmid]="$PROJECT/01_plasmid_track/22_iceberg3/all/iceberg3.tsv"
+    [mag]="$PROJECT/02_mag_track/21_iceberg3/all/iceberg3.tsv"
+    [unbinned]="$PROJECT/03_unbinned_track/21_iceberg3/all/iceberg3.tsv"
 )
 declare -A AMR=(
-    [plasmid]="$PROJECT/plasmid/09_amrfinder/all/amrfinder.tsv"
-    [mag]="$PROJECT/mag/08_amrfinder/all/amrfinder.tsv"
-    [unbinned]="$PROJECT/unbinned/08_amrfinder/all/amrfinder.tsv"
+    [plasmid]="$PROJECT/01_plasmid_track/09_amrfinder/all/amrfinder.tsv"
+    [mag]="$PROJECT/02_mag_track/08_amrfinder/all/amrfinder.tsv"
+    [unbinned]="$PROJECT/03_unbinned_track/08_amrfinder/all/amrfinder.tsv"
 )
 
 avail="$OUT/availability.tsv"

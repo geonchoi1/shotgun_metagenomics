@@ -25,10 +25,10 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-PLASMID=$PROJECT/plasmid/02_drep/dereplicated.fna
-TPM=$PROJECT/plasmid/40_quantification/coverm_tpm.tsv
-CHR_TPM=$PROJECT/mag/40_coverm/coverm_tpm.tsv
-OUT=$PROJECT/plasmid/45_copy_number_prediction
+PLASMID=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+TPM=$PROJECT/01_plasmid_track/40_quantification/coverm_tpm.tsv
+CHR_TPM=$PROJECT/02_mag_track/40_coverm/coverm_tpm.tsv
+OUT=$PROJECT/01_plasmid_track/45_copy_number_prediction
 mkdir -p $OUT
 
 [ -s $OUT/pcn_predictions.tsv ] && { echo "skip (exists)"; exit 0; }

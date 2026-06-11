@@ -10,8 +10,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-PLASMID=$PROJECT/plasmid/02_drep/dereplicated.fna
-OUT=$PROJECT/plasmid/60_plsdb_lookup
+PLASMID=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+OUT=$PROJECT/01_plasmid_track/60_plsdb_lookup
 mkdir -p $OUT/mash $OUT/nucmer $OUT/simka
 
 ############ Mash ############

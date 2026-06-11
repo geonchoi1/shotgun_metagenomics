@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 03 geNomad virus identification (default params) ===
 # Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly_1kb.fasta (HiFi) | scaffolds.fasta (Illumina)
-# Output: $PROJECT/03_virus/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_virus.fna
-#         $PROJECT/03_virus/all_virus.fna   (aggregated across samples)
+# Output: $PROJECT/00_shared/03_genomad_virus/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_virus.fna
+#         $PROJECT/00_shared/03_genomad_virus/all_virus.fna   (aggregated across samples)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,7 +11,7 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 ASM_BASE=$PROJECT/00_shared/02_assembly/metaflye
-OUT_BASE=$PROJECT/03_virus
+OUT_BASE=$PROJECT/00_shared/03_genomad_virus
 mkdir -p "$OUT_BASE"
 
 # geNomad env — fallback if not set in config.sh

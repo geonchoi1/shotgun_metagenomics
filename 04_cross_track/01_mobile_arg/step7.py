@@ -15,9 +15,9 @@ Same-origin-region hits (already excluded in step6 by self-contig) are skipped.
 Source of module = first field of "src|contig|start_end|ARG:..."
 Source of target = prefix of sseqid (PL_/MAG_/UB_)
 
-Optional pOTU map: $PROJECT/plasmid/30_clustering/potu_map.tsv  (contig<TAB>pOTU_id)
+Optional pOTU map: $PROJECT/01_plasmid_track/30_clustering/potu_map.tsv  (contig<TAB>pOTU_id)
 
-Output: $PROJECT/cross/mobile_arg/step7/mobility_pathways.tsv
+Output: $PROJECT/04_cross_track/mobile_arg/step7/mobility_pathways.tsv
 """
 import os
 import sys

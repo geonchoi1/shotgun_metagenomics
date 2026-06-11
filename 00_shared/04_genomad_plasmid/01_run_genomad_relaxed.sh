@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 04.01 geNomad plasmid identification (relaxed -s 4.8 + score calibration) ===
 # Input:  $PROJECT/00_shared/02_assembly/metaflye/<SAMPLE>/assembly_1kb.fasta | scaffolds.fasta
-# Output: $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid_summary.tsv
-#         $PROJECT/04_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid.fna
+# Output: $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid_summary.tsv
+#         $PROJECT/00_shared/04_genomad_plasmid/<SAMPLE>/<SAMPLE>_summary/<SAMPLE>_plasmid.fna
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,7 +11,7 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 ASM_BASE=$PROJECT/00_shared/02_assembly/metaflye
-OUT_BASE=$PROJECT/04_plasmid
+OUT_BASE=$PROJECT/00_shared/04_genomad_plasmid
 mkdir -p "$OUT_BASE"
 
 ENV_GENOMAD=${ENV_GENOMAD:-genomad}

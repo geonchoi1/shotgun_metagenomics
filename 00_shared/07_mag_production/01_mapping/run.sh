@@ -3,10 +3,10 @@
 # HiFi      -> minimap2 -ax map-hifi
 # Illumina  -> bwa-mem (paired-end)
 #
-# Input:  $PROJECT/06_chromosomal/<SAMPLE>/chromosomal.fasta
-#         $PROJECT/01_qc/02_dehuman/<SAMPLE>_clean.fastq.gz             (HiFi)
-#         $PROJECT/01_qc/02_dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz      (Illumina)
-# Output: $PROJECT/07_mag/01_mapping/<SAMPLE>.bam (sorted, indexed)
+# Input:  $PROJECT/00_shared/06_chromosomal_extract/<SAMPLE>/chromosomal.fasta
+#         $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean.fastq.gz             (HiFi)
+#         $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz      (Illumina)
+# Output: $PROJECT/00_shared/07_mag_production/01_mapping/<SAMPLE>.bam (sorted, indexed)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -15,9 +15,9 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 : ${READ_TYPE:?ERROR: export READ_TYPE=hifi or illumina}
 
-REF_BASE=$PROJECT/06_chromosomal
-READ_BASE=$PROJECT/01_qc/02_dehuman
-OUT_DIR=$PROJECT/07_mag/01_mapping
+REF_BASE=$PROJECT/00_shared/06_chromosomal_extract
+READ_BASE=$PROJECT/00_shared/01_read_qc/dehuman
+OUT_DIR=$PROJECT/00_shared/07_mag_production/01_mapping
 mkdir -p "$OUT_DIR"
 
 if [ "$READ_TYPE" = "hifi" ]; then

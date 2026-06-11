@@ -2,9 +2,9 @@
 # === 05 Topology split using USER-provided circ/frag map ===
 # Input:  $PROJECT/00_input/circ_frag_map.tsv   (2 cols: contig_id<TAB>{circ|frag})
 #                                                contig_id must match <SAMPLE>|<seq> in all_putative.fna
-#         $PROJECT/04_plasmid/all_putative.fna
-# Output: $PROJECT/05_plasmid_split/circ/all.fna
-#         $PROJECT/05_plasmid_split/frag/all.fna
+#         $PROJECT/00_shared/04_genomad_plasmid/all_putative.fna
+# Output: $PROJECT/00_shared/05_topology_split/circ/all.fna
+#         $PROJECT/00_shared/05_topology_split/frag/all.fna
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -13,8 +13,8 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 MAP=$PROJECT/00_input/circ_frag_map.tsv
-IN_FA=$PROJECT/04_plasmid/all_putative.fna
-OUT_BASE=$PROJECT/05_plasmid_split
+IN_FA=$PROJECT/00_shared/04_genomad_plasmid/all_putative.fna
+OUT_BASE=$PROJECT/00_shared/05_topology_split
 
 [ -f "$MAP" ]   || { echo "ERROR: USER map missing: $MAP" >&2; exit 2; }
 [ -f "$IN_FA" ] || { echo "ERROR: input fasta missing: $IN_FA" >&2; exit 2; }

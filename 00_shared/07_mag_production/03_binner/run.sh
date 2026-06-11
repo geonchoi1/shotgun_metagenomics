@@ -3,10 +3,10 @@
 # HiFi      -> MetaBinner + MetaDecoder + SemiBin2 (--sequencing-type long_read)
 # Illumina  -> MetaBAT2 (default)     + SemiBin2 (--sequencing-type short_read)
 #
-# Inputs:  $PROJECT/06_chromosomal/<SAMPLE>/chromosomal.fasta
-#          $PROJECT/02_depth/<SAMPLE>_depth.txt    (jgi format)
-#          $PROJECT/07_mag/01_mapping/<SAMPLE>.bam
-# Outputs: $PROJECT/07_mag/03_binner/{metabinner,metadecoder,semibin,metabat2}/<SAMPLE>/
+# Inputs:  $PROJECT/00_shared/06_chromosomal_extract/<SAMPLE>/chromosomal.fasta
+#          $PROJECT/00_shared/07_mag_production/02_depth/<SAMPLE>_depth.txt    (jgi format)
+#          $PROJECT/00_shared/07_mag_production/01_mapping/<SAMPLE>.bam
+# Outputs: $PROJECT/00_shared/07_mag_production/03_binner/{metabinner,metadecoder,semibin,metabat2}/<SAMPLE>/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -15,10 +15,10 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 : ${READ_TYPE:?ERROR: export READ_TYPE=hifi or illumina}
 
-REF_BASE=$PROJECT/06_chromosomal
-DEPTH_DIR=$PROJECT/07_mag/02_depth
-BAM_DIR=$PROJECT/07_mag/01_mapping
-BIN_BASE=$PROJECT/07_mag/03_binner
+REF_BASE=$PROJECT/00_shared/06_chromosomal_extract
+DEPTH_DIR=$PROJECT/00_shared/07_mag_production/02_depth
+BAM_DIR=$PROJECT/00_shared/07_mag_production/01_mapping
+BIN_BASE=$PROJECT/00_shared/07_mag_production/03_binner
 mkdir -p "$BIN_BASE"
 
 list_samples() {
@@ -64,6 +64,17 @@ run_metabinner() {
             python "$mb_dir/scripts/gen_kmer.py" "$ref" 1000 4
             mv "$(dirname "$ref")"/$(basename "$ref" .fasta)_kmer_4_f1000.csv "$kmer" 2>/dev/null || true
         fi
+    fi
+
+    # MetaBinner needs coverage & kmer on the IDENTICAL contig set (gen_kmer filters >=1kb
+    # while jgi-derived coverage keeps all contigs -> covIdxArr garbage -> IndexError).
+    # Restrict coverage to exactly the kmer contigs.
+    if [ -s "$kmer" ] && [ -s "$cov" ]; then
+        awk -F',' 'NR>1{print $1}' "$kmer" > "$out/.kmer_contigs.txt"
+        head -1 "$cov" > "$cov.filt"
+        awk -F'\t' 'NR==FNR{k[$1]=1;next} (FNR>1)&&($1 in k)' "$out/.kmer_contigs.txt" "$cov" >> "$cov.filt"
+        mv "$cov.filt" "$cov"
+        rm -f "$out/.kmer_contigs.txt"
     fi
 
     run_metabinner.sh \

@@ -1,10 +1,10 @@
 #!/bin/bash
 # === 01 Raw FASTA (UB): split into circ/+frag/ multi-FASTA ===
-# Input:  $PROJECT/08_chromosomal_split/unbinned/all.fna
-#         $PROJECT/08_chromosomal_split/unbinned/circ.ids (optional one-per-line)
-# Output: $PROJECT/unbinned/01_raw_fasta/circ/unbinned.fna   (multi-FASTA)
-#         $PROJECT/unbinned/01_raw_fasta/frag/unbinned.fna   (multi-FASTA)
-#         $PROJECT/unbinned/01_raw_fasta/contig_topology.tsv
+# Input:  $PROJECT/00_shared/08_split_binned_unbinned/unbinned/all.fna
+#         $PROJECT/00_shared/08_split_binned_unbinned/unbinned/circ.ids (optional one-per-line)
+# Output: $PROJECT/03_unbinned_track/01_raw_fasta/circ/unbinned.fna   (multi-FASTA)
+#         $PROJECT/03_unbinned_track/01_raw_fasta/frag/unbinned.fna   (multi-FASTA)
+#         $PROJECT/03_unbinned_track/01_raw_fasta/contig_topology.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -12,9 +12,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-SRC=$PROJECT/08_chromosomal_split/unbinned/all.fna
-CIRC_IDS=$PROJECT/08_chromosomal_split/unbinned/circ.ids
-OUT=$PROJECT/unbinned/01_raw_fasta
+SRC=$PROJECT/00_shared/08_split_binned_unbinned/unbinned/all.fna
+CIRC_IDS=$PROJECT/00_shared/08_split_binned_unbinned/unbinned/circ.ids
+OUT=$PROJECT/03_unbinned_track/01_raw_fasta
 mkdir -p "$OUT"/{circ,frag}
 
 [ -s "$SRC" ] || { echo "ERROR: missing $SRC" >&2; exit 1; }

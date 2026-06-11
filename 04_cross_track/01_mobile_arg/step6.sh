@@ -4,11 +4,11 @@
 # length >= 1000, self-hit removed, same-origin-region hit removed (in step7).
 #
 # Output:
-#   $PROJECT/cross/mobile_arg/step6/combined_targets.fna  (PL+MAG+UB FNA concat with prefixes)
-#   $PROJECT/cross/mobile_arg/step6/combined.{ndb,nhr,nin,nsq,not,ntf,nto}
-#   $PROJECT/cross/mobile_arg/step6/modules_combined.fna
-#   $PROJECT/cross/mobile_arg/step6/modules_vs_combined.blast.tsv
-#   $PROJECT/cross/mobile_arg/step6/modules_vs_combined.filt.tsv
+#   $PROJECT/04_cross_track/mobile_arg/step6/combined_targets.fna  (PL+MAG+UB FNA concat with prefixes)
+#   $PROJECT/04_cross_track/mobile_arg/step6/combined.{ndb,nhr,nin,nsq,not,ntf,nto}
+#   $PROJECT/04_cross_track/mobile_arg/step6/modules_combined.fna
+#   $PROJECT/04_cross_track/mobile_arg/step6/modules_vs_combined.blast.tsv
+#   $PROJECT/04_cross_track/mobile_arg/step6/modules_vs_combined.filt.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -16,13 +16,13 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-OUT=$PROJECT/cross/mobile_arg/step6
-S5=$PROJECT/cross/mobile_arg/step5
+OUT=$PROJECT/04_cross_track/mobile_arg/step6
+S5=$PROJECT/04_cross_track/mobile_arg/step5
 mkdir -p "$OUT"
 
-PL_FNA=$PROJECT/plasmid/04_master_orf/all/master.fna
-MAG_FNA=$PROJECT/mag/03_master_orf/all/master.fna
-UB_FNA=$PROJECT/unbinned/03_master_orf/all/master.fna
+PL_FNA=$PROJECT/01_plasmid_track/04_master_orf/all/master.fna
+MAG_FNA=$PROJECT/02_mag_track/03_master_orf/all/master.fna
+UB_FNA=$PROJECT/03_unbinned_track/03_master_orf/all/master.fna
 
 # 1) build combined target FASTA with source prefixes (PL_, MAG_, UB_)
 COMB=$OUT/combined_targets.fna

@@ -6,8 +6,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FNA=$PROJECT/plasmid/02_drep/dereplicated.fna
-OUT=$PROJECT/plasmid/19_dbscan_swa
+FNA=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+OUT=$PROJECT/01_plasmid_track/19_dbscan_swa
 mkdir -p $OUT
 
 [ -s $OUT/bac_DBSCAN-SWA_prophage_summary.txt ] && { echo "skip (exists)"; exit 0; }

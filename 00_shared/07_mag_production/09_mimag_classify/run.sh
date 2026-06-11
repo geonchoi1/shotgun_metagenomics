@@ -6,10 +6,10 @@
 # MQ: completeness>=50, contamination<10
 # LQ: else
 #
-# Input:  $PROJECT/07_mag/05_checkm2/quality_report.tsv
-#         $PROJECT/07_mag/06_rrna/<MAG>.{bac,arc}.gff
-#         $PROJECT/07_mag/07_trna/<MAG>.{bac,arc}.tsv
-# Output: $PROJECT/07_mag/09_mimag.tsv
+# Input:  $PROJECT/00_shared/07_mag_production/05_checkm2/quality_report.tsv
+#         $PROJECT/00_shared/07_mag_production/06_rrna/<MAG>.{bac,arc}.gff
+#         $PROJECT/00_shared/07_mag_production/07_trna/<MAG>.{bac,arc}.tsv
+# Output: $PROJECT/00_shared/07_mag_production/09_mimag.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -17,10 +17,10 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CHECKM=$PROJECT/07_mag/05_checkm2/quality_report.tsv
-RRNA=$PROJECT/07_mag/06_rrna
-TRNA=$PROJECT/07_mag/07_trna
-OUT=$PROJECT/07_mag/09_mimag.tsv
+CHECKM=$PROJECT/00_shared/07_mag_production/05_checkm2/quality_report.tsv
+RRNA=$PROJECT/00_shared/07_mag_production/06_rrna
+TRNA=$PROJECT/00_shared/07_mag_production/07_trna
+OUT=$PROJECT/00_shared/07_mag_production/09_mimag.tsv
 
 [ -s "$CHECKM" ] || { echo "ERROR: $CHECKM missing" >&2; exit 2; }
 

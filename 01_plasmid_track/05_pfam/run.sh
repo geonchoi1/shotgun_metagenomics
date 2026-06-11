@@ -6,8 +6,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/plasmid/04_master_orf/all/master.faa
-OUT=$PROJECT/plasmid/05_pfam
+FAA=$PROJECT/01_plasmid_track/04_master_orf/all/master.faa
+OUT=$PROJECT/01_plasmid_track/05_pfam
 mkdir -p $OUT
 
 [ -s $OUT/pfam.tblout ] && { echo "skip (exists)"; exit 0; }

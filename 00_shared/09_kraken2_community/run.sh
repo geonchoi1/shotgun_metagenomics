@@ -4,12 +4,12 @@
 # Answers "what's in the community" — complements MAG GTDB-Tk
 # which answers "what was recovered as a genome".
 #
-# Input:  $PROJECT/01_qc/02_dehuman/<SAMPLE>_clean.fastq.gz       (HiFi, single)
-#         $PROJECT/01_qc/02_dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz (Illumina, paired)
-# Output: $PROJECT/09_kraken2_community/<SAMPLE>/
+# Input:  $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean.fastq.gz       (HiFi, single)
+#         $PROJECT/00_shared/01_read_qc/dehuman/<SAMPLE>_clean_R{1,2}.fastq.gz (Illumina, paired)
+# Output: $PROJECT/00_shared/09_kraken2_community/<SAMPLE>/
 #           kraken2.report, kraken2.output, bracken.S.report, bracken.G.report
-#         $PROJECT/09_kraken2_community/merged_bracken_species.tsv
-#         $PROJECT/09_kraken2_community/merged_bracken_genus.tsv
+#         $PROJECT/00_shared/09_kraken2_community/merged_bracken_species.tsv
+#         $PROJECT/00_shared/09_kraken2_community/merged_bracken_genus.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -18,8 +18,8 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 : ${READ_TYPE:?ERROR: export READ_TYPE=hifi or illumina}
 
-IN_DIR=$PROJECT/01_qc/02_dehuman
-OUT_BASE=$PROJECT/09_kraken2_community
+IN_DIR=$PROJECT/00_shared/01_read_qc/dehuman
+OUT_BASE=$PROJECT/00_shared/09_kraken2_community
 mkdir -p "$OUT_BASE"
 
 activate_env "$ENV_KRAKEN2"

@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 07.08 dRep species-level cross-sample dereplication (-sa 0.95) ===
-# Input:  $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/*.fa  (all samples pooled)
-#         $PROJECT/07_mag/05_checkm2/genomeInfo.csv
-# Output: $PROJECT/07_mag/08_drep_species/dereplicated_genomes/*.fa
+# Input:  $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa  (all samples pooled)
+#         $PROJECT/00_shared/07_mag_production/05_checkm2/genomeInfo.csv
+# Output: $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,9 +10,9 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-DAS_BASE=$PROJECT/07_mag/04_dastool
-GINFO=$PROJECT/07_mag/05_checkm2/genomeInfo.csv
-OUT_DIR=$PROJECT/07_mag/08_drep_species
+DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
+GINFO=$PROJECT/00_shared/07_mag_production/05_checkm2/genomeInfo.csv
+OUT_DIR=$PROJECT/00_shared/07_mag_production/08_drep_species
 INPUT_DIR=$OUT_DIR/input_bins
 mkdir -p "$OUT_DIR" "$INPUT_DIR"
 
@@ -38,6 +38,7 @@ dRep dereplicate "$OUT_DIR" \
     -g "$INPUT_DIR"/*.fa \
     --genomeInfo "$GINFO" \
     -sa 0.95 \
+    -comp 50 -con 10 \
     -p "$THREADS" \
     > "$OUT_DIR/run.log" 2>&1
 

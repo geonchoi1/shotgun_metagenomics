@@ -1,9 +1,9 @@
 #!/bin/bash
 # === 01 Raw FASTA: symlink dereplicated MAGs into circ/frag folders ===
-# Input:  $PROJECT/07_mag/08_drep_species/dereplicated_genomes/*.fa
-#         $PROJECT/07_mag/circ_mag.tsv  (optional: MAG<TAB>circ|frag; default frag)
-# Output: $PROJECT/mag/01_raw_fasta/{circ,frag}/<MAG>.fa  (symlinks)
-#         $PROJECT/mag/01_raw_fasta/mag_topology.tsv
+# Input:  $PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes/*.fa
+#         $PROJECT/00_shared/07_mag_production/circ_mag.tsv  (optional: MAG<TAB>circ|frag; default frag)
+# Output: $PROJECT/02_mag_track/01_raw_fasta/{circ,frag}/<MAG>.fa  (symlinks)
+#         $PROJECT/02_mag_track/01_raw_fasta/mag_topology.tsv
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -11,9 +11,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-SRC=$PROJECT/07_mag/08_drep_species/dereplicated_genomes
-MAP=$PROJECT/07_mag/circ_mag.tsv
-OUT=$PROJECT/mag/01_raw_fasta
+SRC=$PROJECT/00_shared/07_mag_production/08_drep_species/dereplicated_genomes
+MAP=$PROJECT/00_shared/07_mag_production/circ_mag.tsv
+OUT=$PROJECT/02_mag_track/01_raw_fasta
 mkdir -p "$OUT/circ" "$OUT/frag"
 
 [ -d "$SRC" ] || { echo "ERROR: no dereplicated_genomes at $SRC" >&2; exit 1; }

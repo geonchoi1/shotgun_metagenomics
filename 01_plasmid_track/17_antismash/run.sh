@@ -7,9 +7,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CIRC=$PROJECT/plasmid/02_drep/circ.fna
-FRAG=$PROJECT/plasmid/02_drep/frag.fna
-OUT=$PROJECT/plasmid/17_antismash
+CIRC=$PROJECT/01_plasmid_track/02_drep/circ.fna
+FRAG=$PROJECT/01_plasmid_track/02_drep/frag.fna
+OUT=$PROJECT/01_plasmid_track/17_antismash
 mkdir -p $OUT/circ $OUT/frag
 
 activate_env "$ENV_ANTISMASH"

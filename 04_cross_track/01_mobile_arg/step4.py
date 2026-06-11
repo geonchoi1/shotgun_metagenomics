@@ -8,7 +8,7 @@ Compute pairwise distances and classify into 3 tiers:
   strict   <= 2 kb
   standard <= 5 kb
   broad    <= 10 kb
-Output: $PROJECT/cross/mobile_arg/step4/{src}_arg_mge_distance.tsv
+Output: $PROJECT/04_cross_track/mobile_arg/step4/{src}_arg_mge_distance.tsv
 """
 import os
 import sys

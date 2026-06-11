@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 04_cross_track/01_mobile_arg : Mobile ARG pipeline orchestrator ===
 # Spans plasmid (PL) + MAG (MAG) + unbinned (UB) tracks.
-# Output root: $PROJECT/cross/mobile_arg/{step1,..,step8}/
+# Output root: $PROJECT/04_cross_track/mobile_arg/{step1,..,step8}/
 # Each step has its own script in this dir. Re-run is idempotent.
 
 set -euo pipefail
@@ -11,7 +11,7 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 export PROJECT REPO SCRIPT_DIR
-OUT_ROOT=$PROJECT/cross/mobile_arg
+OUT_ROOT=$PROJECT/04_cross_track/mobile_arg
 mkdir -p "$OUT_ROOT"
 
 run_step() {

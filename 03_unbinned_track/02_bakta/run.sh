@@ -4,8 +4,8 @@
 # (~100k+ contigs); pyrodigal.train() OOMs above ~100k. Linear is auto-chunked +
 # parallelized.
 #
-# Input:  $PROJECT/unbinned/01_raw_fasta/{circ,frag}/unbinned.fna
-# Output: $PROJECT/unbinned/02_bakta/{circ,frag}/unbinned_{circ,frag}.{faa,ffn,fna,gff3,tsv}
+# Input:  $PROJECT/03_unbinned_track/01_raw_fasta/{circ,frag}/unbinned.fna
+# Output: $PROJECT/03_unbinned_track/02_bakta/{circ,frag}/unbinned_{circ,frag}.{faa,ffn,fna,gff3,tsv}
 #
 # Env overrides:
 #   CHUNK_SIZE=10000          # contigs per chunk for linear
@@ -19,9 +19,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CIRC_IN=$PROJECT/unbinned/01_raw_fasta/circ/unbinned.fna
-FRAG_IN=$PROJECT/unbinned/01_raw_fasta/frag/unbinned.fna
-OUT=$PROJECT/unbinned/02_bakta
+CIRC_IN=$PROJECT/03_unbinned_track/01_raw_fasta/circ/unbinned.fna
+FRAG_IN=$PROJECT/03_unbinned_track/01_raw_fasta/frag/unbinned.fna
+OUT=$PROJECT/03_unbinned_track/02_bakta
 mkdir -p "$OUT"/{circ,frag,frag_chunks}
 
 CHUNK_SIZE=${CHUNK_SIZE:-10000}

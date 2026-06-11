@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 07.05 CheckM2 on DAS_Tool consensus bins (all samples pooled) ===
-# Input:  $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
-# Output: $PROJECT/07_mag/05_checkm2/quality_report.tsv
-#         $PROJECT/07_mag/05_checkm2/genomeInfo.csv (drep-ready)
+# Input:  $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
+# Output: $PROJECT/00_shared/07_mag_production/05_checkm2/quality_report.tsv
+#         $PROJECT/00_shared/07_mag_production/05_checkm2/genomeInfo.csv (drep-ready)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,9 +10,10 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-DAS_BASE=$PROJECT/07_mag/04_dastool
-OUT_DIR=$PROJECT/07_mag/05_checkm2
-INPUT_DIR=$OUT_DIR/input_bins
+DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
+OUT_DIR=$PROJECT/00_shared/07_mag_production/05_checkm2
+# input_bins must live OUTSIDE OUT_DIR — checkm2 predict --force wipes the output dir.
+INPUT_DIR=${OUT_DIR}_input_bins
 mkdir -p "$OUT_DIR" "$INPUT_DIR"
 
 REPORT=$OUT_DIR/quality_report.tsv

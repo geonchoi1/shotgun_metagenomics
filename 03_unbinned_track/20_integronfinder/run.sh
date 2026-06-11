@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 20 IntegronFinder on UB contigs (--local-max --func-annot) ===
-# Input:  $PROJECT/unbinned/01_raw_fasta/all/unbinned.fna
-# Output: $PROJECT/unbinned/20_integronfinder/all/Results_Integron_Finder_unbinned/
+# Input:  $PROJECT/03_unbinned_track/01_raw_fasta/all/unbinned.fna
+# Output: $PROJECT/03_unbinned_track/20_integronfinder/all/Results_Integron_Finder_unbinned/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-IN=$PROJECT/unbinned/01_raw_fasta/all/unbinned.fna
-OUT=$PROJECT/unbinned/20_integronfinder/all
+IN=$PROJECT/03_unbinned_track/01_raw_fasta/all/unbinned.fna
+OUT=$PROJECT/03_unbinned_track/20_integronfinder/all
 mkdir -p "$OUT"
 
 [ -s "$IN" ] || { echo "ERROR: missing $IN" >&2; exit 1; }

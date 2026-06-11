@@ -16,9 +16,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CIRC_FNA=$PROJECT/05_plasmid_split/circ/all.fna
-FRAG_FNA=$PROJECT/05_plasmid_split/frag/all.fna
-OUT=$PROJECT/plasmid/02_drep
+CIRC_FNA=$PROJECT/00_shared/05_topology_split/circ/all.fna
+FRAG_FNA=$PROJECT/00_shared/05_topology_split/frag/all.fna
+OUT=$PROJECT/01_plasmid_track/02_drep
 mkdir -p $OUT
 
 ALL_FNA=$OUT/all_putative.fna

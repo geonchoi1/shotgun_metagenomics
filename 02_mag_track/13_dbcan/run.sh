@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 13 dbCAN CAZyme annotation (protein mode) ===
-# Input:  $PROJECT/mag/03_master_orf/all/master.faa
-# Output: $PROJECT/mag/13_dbcan/overview.tsv (and dbCAN files)
+# Input:  $PROJECT/02_mag_track/03_master_orf/all/master.faa
+# Output: $PROJECT/02_mag_track/13_dbcan/overview.tsv (and dbCAN files)
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/mag/03_master_orf/all/master.faa
-OUT=$PROJECT/mag/13_dbcan
+FAA=$PROJECT/02_mag_track/03_master_orf/all/master.faa
+OUT=$PROJECT/02_mag_track/13_dbcan
 mkdir -p "$OUT"
 
 [ -s "$FAA" ] || { echo "ERROR: $FAA empty" >&2; exit 1; }

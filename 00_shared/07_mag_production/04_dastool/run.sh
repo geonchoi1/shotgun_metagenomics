@@ -1,8 +1,8 @@
 #!/bin/bash
 # === 07.04 DAS_Tool consensus per sample ===
-# Input:  $PROJECT/07_mag/03_binner/{metabinner,metadecoder,semibin,metabat2}/<SAMPLE>/...bins
-#         $PROJECT/06_chromosomal/<SAMPLE>/chromosomal.fasta
-# Output: $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/
+# Input:  $PROJECT/00_shared/07_mag_production/03_binner/{metabinner,metadecoder,semibin,metabat2}/<SAMPLE>/...bins
+#         $PROJECT/00_shared/06_chromosomal_extract/<SAMPLE>/chromosomal.fasta
+# Output: $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -10,9 +10,9 @@ REPO=$(cd "$SCRIPT_DIR/../../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-REF_BASE=$PROJECT/06_chromosomal
-BIN_BASE=$PROJECT/07_mag/03_binner
-OUT_BASE=$PROJECT/07_mag/04_dastool
+REF_BASE=$PROJECT/00_shared/06_chromosomal_extract
+BIN_BASE=$PROJECT/00_shared/07_mag_production/03_binner
+OUT_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
 mkdir -p "$OUT_BASE"
 
 activate_env "$ENV_DASTOOL"
@@ -21,11 +21,11 @@ activate_env "$ENV_DASTOOL"
 make_c2b() {
     local bins_dir=$1 binner=$2 out=$3
     : > "$out"
-    for f in "$bins_dir"/*.{fa,fasta,fna}; do
+    for f in "$bins_dir"/*.{fa,fasta,fna,fa.gz,fasta.gz,fna.gz}; do
         [ -f "$f" ] || continue
         local bin
-        bin=$(basename "$f"); bin=${bin%.*}
-        grep '^>' "$f" | sed 's/^>//' | awk -v b="$binner.$bin" '{print $1"\t"b}' >> "$out"
+        bin=$(basename "$f"); bin=${bin%.gz}; bin=${bin%.*}
+        zcat -f "$f" | grep '^>' | sed 's/^>//' | awk -v b="$binner.$bin" '{print $1"\t"b}' >> "$out"
     done
 }
 
@@ -52,7 +52,7 @@ for d in "$REF_BASE"/*/; do
             metabat2)    bd="$BIN_BASE/metabat2/$sample"                   ;;
         esac
         [ -d "$bd" ] || continue
-        ls "$bd"/*.{fa,fasta,fna} 2>/dev/null | grep -q . || continue
+        find "$bd" -maxdepth 1 \( -name '*.fa' -o -name '*.fasta' -o -name '*.fna' -o -name '*.fa.gz' -o -name '*.fasta.gz' -o -name '*.fna.gz' \) 2>/dev/null | grep -q . || continue
         c2b="$out_dir/${bn}.c2b.tsv"
         make_c2b "$bd" "$bn" "$c2b"
         [ -s "$c2b" ] || continue

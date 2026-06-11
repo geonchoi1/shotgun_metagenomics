@@ -6,9 +6,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CIRC=$PROJECT/plasmid/02_drep/circ.fna
-FRAG=$PROJECT/plasmid/02_drep/frag.fna
-OUT=$PROJECT/plasmid/21_integronfinder
+CIRC=$PROJECT/01_plasmid_track/02_drep/circ.fna
+FRAG=$PROJECT/01_plasmid_track/02_drep/frag.fna
+OUT=$PROJECT/01_plasmid_track/21_integronfinder
 mkdir -p $OUT/circ $OUT/frag
 
 activate_env "$ENV_INTEGRONFINDER"

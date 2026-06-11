@@ -21,9 +21,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-OURS=$PROJECT/plasmid/02_drep/dereplicated.fna
-CIRC=$PROJECT/plasmid/02_drep/circ.fna
-OUT=$PROJECT/plasmid/30_clustering
+OURS=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
+CIRC=$PROJECT/01_plasmid_track/02_drep/circ.fna
+OUT=$PROJECT/01_plasmid_track/30_clustering
 mkdir -p $OUT/track1 $OUT/track2_copla $OUT/track3 $OUT/validation
 
 CAMARGO_PIPELINE=${CAMARGO_PIPELINE:-$HOME/tools/bioinformatics-snakemake-pipelines/contig-ani-leiden-clustering-pipeline}

@@ -1,7 +1,7 @@
 #!/bin/bash
 # === 05 NCBIfam (PGAP) HMM search (--cut_ga) ===
-# Input:  $PROJECT/mag/03_master_orf/all/master.faa
-# Output: $PROJECT/mag/05_ncbifam/ncbifam.tblout, ncbifam.domtblout
+# Input:  $PROJECT/02_mag_track/03_master_orf/all/master.faa
+# Output: $PROJECT/02_mag_track/05_ncbifam/ncbifam.tblout, ncbifam.domtblout
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,8 +9,8 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-FAA=$PROJECT/mag/03_master_orf/all/master.faa
-OUT=$PROJECT/mag/05_ncbifam
+FAA=$PROJECT/02_mag_track/03_master_orf/all/master.faa
+OUT=$PROJECT/02_mag_track/05_ncbifam
 mkdir -p "$OUT"
 
 [ -s "$FAA" ] || { echo "ERROR: $FAA empty" >&2; exit 1; }

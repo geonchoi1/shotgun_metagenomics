@@ -8,10 +8,10 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-REF=$PROJECT/plasmid/02_drep/dereplicated.fna
+REF=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
 READS_DIR=${READS_DIR:-$PROJECT/reads}
 PRESET=${MINIMAP2_PRESET:-map-hifi}  # use sr for short reads
-OUT=$PROJECT/plasmid/40_quantification
+OUT=$PROJECT/01_plasmid_track/40_quantification
 mkdir -p $OUT $OUT/bam
 
 [ -s $REF ] || { echo "ERROR: $REF missing"; exit 1; }

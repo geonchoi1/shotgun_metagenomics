@@ -3,10 +3,10 @@
 # Binned   = chromosomal contig captured in ANY DAS_Tool MAG (any sample)
 # Unbinned = the rest
 #
-# Input:  $PROJECT/06_chromosomal/<SAMPLE>/chromosomal.fasta
-#         $PROJECT/07_mag/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
-# Output: $PROJECT/08_chromosomal_split/binned/all.fna
-#         $PROJECT/08_chromosomal_split/unbinned/all.fna
+# Input:  $PROJECT/00_shared/06_chromosomal_extract/<SAMPLE>/chromosomal.fasta
+#         $PROJECT/00_shared/07_mag_production/04_dastool/<SAMPLE>/_DASTool_bins/*.fa
+# Output: $PROJECT/00_shared/08_split_binned_unbinned/binned/all.fna
+#         $PROJECT/00_shared/08_split_binned_unbinned/unbinned/all.fna
 
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -14,9 +14,9 @@ REPO=$(cd "$SCRIPT_DIR/../.." && pwd)
 source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
-CHR_BASE=$PROJECT/06_chromosomal
-DAS_BASE=$PROJECT/07_mag/04_dastool
-OUT_BASE=$PROJECT/08_chromosomal_split
+CHR_BASE=$PROJECT/00_shared/06_chromosomal_extract
+DAS_BASE=$PROJECT/00_shared/07_mag_production/04_dastool
+OUT_BASE=$PROJECT/00_shared/08_split_binned_unbinned
 mkdir -p "$OUT_BASE/binned" "$OUT_BASE/unbinned"
 
 BINNED_FA=$OUT_BASE/binned/all.fna
