@@ -74,13 +74,17 @@ run_metabinner() {
         rm -f "$out/.kmer_contigs.txt" "$out/.depth_lookup.tsv"
     fi
 
+    # MetaBinner's KMeans (n_jobs=-1) leaves contigs unbinned at very high thread counts,
+    # which then crashes split_hhbins.py (KeyError). Cap MetaBinner threads (other binners
+    # keep $THREADS). 24 matches the original working run.
+    local mb_t=$(( THREADS > 24 ? 24 : THREADS ))
     run_metabinner.sh \
         -a "$(readlink -f "$ref")" \
         -d "$(readlink -f "$cov")" \
         -k "$(readlink -f "$kmer")" \
         -o "$(readlink -f "$out")" \
         -p "$mb_dir" \
-        -t "$THREADS" \
+        -t "$mb_t" \
         -s small \
         > "$out/run.log" 2>&1 || true
 }
