@@ -35,6 +35,7 @@ else
     checkm2 predict \
         --threads "$THREADS" \
         --input "$INPUT_DIR" \
+        --extension fa \
         --output-directory "$OUT_DIR" \
         --database_path "$CHECKM2_DB" \
         --force \
