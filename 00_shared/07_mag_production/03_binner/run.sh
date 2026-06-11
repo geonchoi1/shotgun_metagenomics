@@ -50,31 +50,28 @@ run_metabinner() {
     local out="$BIN_BASE/metabinner/$sample"
     [ -d "$out/metabinner_res" ] && [ "$(ls -A "$out/metabinner_res" 2>/dev/null)" ] && { echo "    metabinner $sample done"; return 0; }
     mkdir -p "$out"
-    local cov="$out/coverage_profile.tsv"
-    make_metabinner_cov "$depth" "$cov"
-
-    # kmer profile via MetaBinner's helper if available, else fall back to default flow
+    # kmer profile (>=1kb) via MetaBinner's gen_kmer.py — generated FIRST so the coverage
+    # below can be built on exactly the same contig set/order.
     local kmer="$out/kmer_4_f1000.csv"
-    if [ ! -s "$kmer" ]; then
-        local script_path
-        script_path=$(command -v run_metabinner.sh || true)
-        local mb_dir
-        mb_dir=$(dirname "$(dirname "$(command -v run_metabinner.sh 2>/dev/null || echo /dev/null)")")
-        if [ -f "$mb_dir/scripts/gen_kmer.py" ]; then
-            python "$mb_dir/scripts/gen_kmer.py" "$ref" 1000 4
-            mv "$(dirname "$ref")"/$(basename "$ref" .fasta)_kmer_4_f1000.csv "$kmer" 2>/dev/null || true
-        fi
+    local mb_dir
+    mb_dir=$(dirname "$(dirname "$(command -v run_metabinner.sh 2>/dev/null || echo /dev/null)")")
+    if [ ! -s "$kmer" ] && [ -f "$mb_dir/scripts/gen_kmer.py" ]; then
+        python "$mb_dir/scripts/gen_kmer.py" "$ref" 1000 4
+        mv "$(dirname "$ref")"/$(basename "$ref" .fasta)_kmer_4_f1000.csv "$kmer" 2>/dev/null || true
     fi
 
-    # MetaBinner needs coverage & kmer on the IDENTICAL contig set (gen_kmer filters >=1kb
-    # while jgi-derived coverage keeps all contigs -> covIdxArr garbage -> IndexError).
-    # Restrict coverage to exactly the kmer contigs.
-    if [ -s "$kmer" ] && [ -s "$cov" ]; then
-        awk -F',' 'NR>1{print $1}' "$kmer" > "$out/.kmer_contigs.txt"
-        head -1 "$cov" > "$cov.filt"
-        awk -F'\t' 'NR==FNR{k[$1]=1;next} (FNR>1)&&($1 in k)' "$out/.kmer_contigs.txt" "$cov" >> "$cov.filt"
-        mv "$cov.filt" "$cov"
-        rm -f "$out/.kmer_contigs.txt"
+    # Coverage profile built FROM the kmer contig list (identical set AND order), with depth
+    # from the jgi totalAvgDepth column (0 if a contig is absent from the depth file).
+    # MetaBinner requires coverage and kmer on exactly the same contigs in the same order;
+    # a jgi-ordered/filtered coverage triggers a split_hhbins.py KeyError, so build coverage
+    # directly from the kmer file.
+    local cov="$out/coverage_profile.tsv"
+    if [ -s "$kmer" ] && [ -s "$depth" ]; then
+        tail -n +2 "$kmer" | cut -d',' -f1 > "$out/.kmer_contigs.txt"
+        awk -F'\t' 'NR>1{print $1"\t"$3}' "$depth" > "$out/.depth_lookup.tsv"
+        { printf 'contigName\t%s_depth\n' "$sample"
+          awk -F'\t' 'NR==FNR{d[$1]=$2;next}{print $1"\t"(($1 in d)?d[$1]:0)}' "$out/.depth_lookup.tsv" "$out/.kmer_contigs.txt"; } > "$cov"
+        rm -f "$out/.kmer_contigs.txt" "$out/.depth_lookup.tsv"
     fi
 
     run_metabinner.sh \
