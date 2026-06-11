@@ -1,6 +1,8 @@
 #!/bin/bash
 # === minimap2 + CoverM TPM quantification per sample ===
-# Reads sample reads from $PROJECT/reads/<sample>/{*.fq.gz | *_1.fq.gz,_2.fq.gz}
+# Reads clean (dehuman) reads from $PROJECT/00_shared/01_read_qc/dehuman/
+#   HiFi:     <SAMPLE>_clean.fastq.gz
+#   Illumina: <SAMPLE>_clean_R1.fastq.gz + <SAMPLE>_clean_R2.fastq.gz
 # Maps each sample's reads to dereplicated.fna
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -9,7 +11,7 @@ source "$REPO/config.sh"
 : ${PROJECT:?ERROR: export PROJECT=/path/to/project}
 
 REF=$PROJECT/01_plasmid_track/02_drep/dereplicated.fna
-READS_DIR=${READS_DIR:-$PROJECT/reads}
+READS_DIR=${READS_DIR:-$PROJECT/00_shared/01_read_qc/dehuman}
 PRESET=${MINIMAP2_PRESET:-map-hifi}  # use sr for short reads
 OUT=$PROJECT/01_plasmid_track/40_quantification
 mkdir -p $OUT $OUT/bam
@@ -18,31 +20,26 @@ mkdir -p $OUT $OUT/bam
 
 activate_env "$ENV_COVERM"
 
-# Auto-detect samples by checking $READS_DIR/<sample>/*.fq.gz
+# Auto-detect samples from clean dehuman reads (flat: <SAMPLE>_clean.fastq.gz, or
+# <SAMPLE>_clean_R1/_R2.fastq.gz for Illumina).
 shopt -s nullglob
-for SDIR in $READS_DIR/*/; do
-  sample=$(basename $SDIR)
+SAMPLES=$(ls "$READS_DIR"/*_clean.fastq.gz "$READS_DIR"/*_clean_R1.fastq.gz 2>/dev/null \
+          | xargs -n1 basename 2>/dev/null | sed -E 's/_clean(_R1)?\.fastq\.gz$//' | sort -u)
+for sample in $SAMPLES; do
   bam=$OUT/bam/${sample}.bam
   if [ -s $bam ]; then echo "skip $sample (bam exists)"; continue; fi
-  # Determine read layout
-  R1=( ${SDIR}*_1.fq.gz ${SDIR}*_R1.fq.gz ${SDIR}*_1.fastq.gz )
-  R2=( ${SDIR}*_2.fq.gz ${SDIR}*_R2.fq.gz ${SDIR}*_2.fastq.gz )
-  HIFI=( ${SDIR}*.fq.gz ${SDIR}*.fastq.gz )
-  echo "[$(date '+%F %T')] $sample → minimap2 -ax $PRESET"
-  if [ -n "${R1[0]:-}" ] && [ -e "${R1[0]}" ] && [ -n "${R2[0]:-}" ] && [ -e "${R2[0]}" ]; then
-    minimap2 -ax sr -t $THREADS_MINIMAP2 $REF ${R1[0]} ${R2[0]} \
+  R1=$READS_DIR/${sample}_clean_R1.fastq.gz
+  R2=$READS_DIR/${sample}_clean_R2.fastq.gz
+  HIFI=$READS_DIR/${sample}_clean.fastq.gz
+  echo "[$(date '+%F %T')] $sample → minimap2"
+  if [ -e "$R1" ] && [ -e "$R2" ]; then
+    minimap2 -ax sr -t $THREADS_MINIMAP2 $REF "$R1" "$R2" \
+      | samtools sort -@ $THREADS_MINIMAP2 -o $bam -
+  elif [ -e "$HIFI" ]; then
+    minimap2 -ax $PRESET -t $THREADS_MINIMAP2 $REF "$HIFI" \
       | samtools sort -@ $THREADS_MINIMAP2 -o $bam -
   else
-    # single-file fallback (HiFi or merged)
-    READ=""
-    for f in "${HIFI[@]}"; do
-      bn=$(basename $f)
-      [[ $bn == *_1.* || $bn == *_R1.* || $bn == *_2.* || $bn == *_R2.* ]] && continue
-      READ=$f; break
-    done
-    [ -z "$READ" ] && { echo "no reads for $sample"; continue; }
-    minimap2 -ax $PRESET -t $THREADS_MINIMAP2 $REF $READ \
-      | samtools sort -@ $THREADS_MINIMAP2 -o $bam -
+    echo "no reads for $sample"; continue
   fi
   samtools index -@ $THREADS_MINIMAP2 $bam
 done
