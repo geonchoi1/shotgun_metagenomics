@@ -16,14 +16,14 @@ Raw reads (Illumina or HiFi)
       ▼ 00_shared/03_genomad_virus/  geNomad default            → VIRUS
       ▼ 00_shared/04_genomad_plasmid/ -s 4.8 --relaxed + F1-F5  → PLASMID
       │
-      ▼ 05_topology_split/           auto topology from 02_assembly/contig_topology.tsv
-      ▼ 06_chromosomal_extract/      assembly − plasmid − virus = chromosomal
-      ▼ 07_mag_production/           mapping → binning → DAS_Tool → CheckM2
+      ▼ 00_shared/05_topology_split/           auto topology from 02_assembly/contig_topology.tsv
+      ▼ 00_shared/06_chromosomal_extract/      assembly − plasmid − virus = chromosomal
+      ▼ 00_shared/07_mag_production/           mapping → binning → DAS_Tool → CheckM2
       │                              → barrnap + tRNAscan → dRep species (95%)
       │                              → dRep strain (99% supp)
       │                              → MIMAG classify → GTDB-Tk
-      ▼ 08_split_binned_unbinned/    chromosomal → MAG-binned + UNBINNED
-      ▼ 09_kraken2_community/        read-level Kraken2 + Bracken (covers everything)
+      ▼ 00_shared/08_split_binned_unbinned/    chromosomal → MAG-binned + UNBINNED
+      ▼ 00_shared/09_kraken2_community/        read-level Kraken2 + Bracken (covers everything)
       │
       ├───────────┬────────────┬────────────────┐
       ▼           ▼            ▼                │
