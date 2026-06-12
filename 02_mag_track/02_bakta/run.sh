@@ -33,7 +33,6 @@ run_bakta() {
               --output "$out" \
               --prefix "$mag" \
               --threads "$THREADS_BAKTA" \
-              --locus-tag "$mag" \
               --force \
               $extra \
               "$fa" > "$out/bakta.log" 2>&1 || { echo "  FAIL $topo/$mag — see $out/bakta.log"; continue; }
